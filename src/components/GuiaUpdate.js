@@ -1,10 +1,15 @@
 import React, { Component } from "react";
 import Loading from "../utils/loading";
-import { Container, Row, Col, Alert, Button, Form, FormGroup, Label, Input, Breadcrumb, BreadcrumbItem } from "reactstrap";
+import { Container, Row, Col, Alert, Button, Form, FormGroup, Label, Input, Breadcrumb, BreadcrumbItem, TabContent, TabPane, Nav, NavItem, NavLink } from "reactstrap";
+import classnames from 'classnames';
+
 import GoogleMapReact from "google-map-react";
 import Servicios from "./subcomponentes/Servicios";
 import Galeria from "./subcomponentes/Galeria";
+import Redes from "./subcomponentes/Redes";
+import Tarifas from "./subcomponentes/Tarifas";
 import ModalMsg from "../utils/ModalMsg";
+
 
 const Alerta = (props) => {
 	return (
@@ -16,8 +21,19 @@ const Alerta = (props) => {
 
 const Marca = (props) => {
 	return(
-		<img src={process.env.REACT_APP_URL_API_SERVER + "/imgs/googlemark.png"} style={{width: "32px", height: "32px"}} alt="I" />
+		<img src={`${process.env.REACT_APP_URL_API_SERVER_2}/imgs/googlemark.png`} style={{width: "32px", height: "32px"}} alt="I" />
 	);
+}
+
+const format_date = (fecha) => {
+	if(fecha) {
+		// YYYY-mm-dd
+		let farray = fecha.split("-");
+		// dd/mm/YYYY
+		return `${farray[2]}/${farray[1]}/${farray[0]}`;
+	} else {
+		return null;
+	}
 }
 
 class GuiaUpdate extends Component {
@@ -52,6 +68,7 @@ class GuiaUpdate extends Component {
 		this.getCiudades = this.getCiudades.bind(this);
 		this.readURLLogo = this.readURLLogo.bind(this);
 		this.handleMsgOk = this.handleMsgOk.bind(this);
+		this.toggleTabs = this.toggleTabs.bind(this);
 	}
 
 	/*
@@ -61,6 +78,14 @@ class GuiaUpdate extends Component {
 		if (event.keyCode == 13) return this.sendData()
 	}
 	*/
+
+	toggleTabs(tab) {
+		if (this.state.activeTab !== tab) {
+			this.setState({
+				activeTab: tab
+			});
+		}
+	}
 
 	handleMsgOk = () => {
 		this.setState({
@@ -72,12 +97,12 @@ class GuiaUpdate extends Component {
 	}
 
 	findValorizacion = (idTipoCategoriasSelect, idValorTipCatGuia) => {
-		fetch(process.env.REACT_APP_URL_API_SERVER + "/valorizaciones.php?idCategoria=" + idTipoCategoriasSelect)
+		fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/valorizaciones/tipo/" + idTipoCategoriasSelect)
 		.then(res => {
 			if(res.ok && res.status === 200) {
 				res.json().then((data) => {
 					this.setState({
-						valorestipocat: data
+						valorestipocat: data.data.registros
 					}, () => {
 						if(idValorTipCatGuia === 0) {
 							this.setState({valorestipocatselect: this.state.valorestipocat[0].id});
@@ -100,12 +125,12 @@ class GuiaUpdate extends Component {
 	}
 
 	getCiudades = (idDepartamento) => {
-		return fetch(process.env.REACT_APP_URL_API_SERVER + "/ciudades.php?idDep=" + idDepartamento)
+		return fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/ciudades/departamento/" + idDepartamento)
 		.then(res => {
 			if(res.ok && res.status === 200) {
 				res.json().then((data) => {
 					this.setState({
-						ciudades: data
+						ciudades: data.data.registros
 					});
 				});
 			}
@@ -155,6 +180,7 @@ class GuiaUpdate extends Component {
 	handleSubmit = (event) => {
 		event.preventDefault();
 		const data = new FormData(event.target);
+		//Acomodar a la nueva API!
 		fetch(process.env.REACT_APP_URL_API_SERVER + "/guiaupdate.php", {
 			method: "POST",
 			headers: {
@@ -220,70 +246,80 @@ class GuiaUpdate extends Component {
 	}
 
 	componentDidMount() {
-		if(isFinite(this.props.match.params.id)) {
+		if(isFinite(this.props.match.params.id) && this.props.match.params.id !== "0") {
 			this.setState({
 				id: this.props.match.params.id
 			});
-			//Tipos de categorias
-			fetch(process.env.REACT_APP_URL_API_SERVER + "/tiposcategorias.php ")
+			//Tipos de Categorias
+			fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/valorizaciones/tipos")
 			.then(res => {
 				if(res.ok && res.status === 200) {
 					res.json().then((data) => {
 						this.setState({
-							tiposcategorias: data
+							tiposcategorias: data.data.registros
 						});
 					});
 				}
 			});
-			//Tipos
-			fetch(process.env.REACT_APP_URL_API_SERVER + "/tipos.php")
+			//Tipos de Alojamiento
+			fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/tipos")
 			.then(res => {
 				if(res.ok && res.status === 200) {
 					res.json().then((data) => {
 						this.setState({
-							tipos: data
+							tipos: data.data.registros
 						});
 					});
 				}
 			});
 			//Datos de la Guia
-			fetch(process.env.REACT_APP_URL_API_SERVER + "/one_guia.php?idGuia=" + this.props.match.params.id)
+			fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/guia/" + this.props.match.params.id)
 			.then(res => {
 				if(res.ok && res.status === 200) {
 					res.json().then((data) => {
-						this.setState({
-							guia: data
-						}, () => {
-							//Back //Esto Sirve para volver al Home en el lugar que se inició
-							localStorage.setItem("idDepartamento", this.state.guia.iddepartamento);
-							localStorage.setItem("nombreDepartamento", this.state.guia.nombredepartamento);
-							localStorage.setItem("idCiudad", this.state.guia.idciudad);
-							localStorage.setItem("nombreCiudad", this.state.guia.nombreciudad);
-							//Tipos de Valorización
+						if(data) {
+							if(data.data.registros[0].r_vencimiento === null) {
+								data.data.registros[0].r_vencimiento = "";
+							}
 							this.setState({
-								tiposcategoriasselect: this.state.guia.idtipocaterias
-							});
-							//
-							//Buscar la Valorización
-							this.findValorizacion(this.state.guia.idtipocaterias, this.state.guia.idvalortipcat);
-							//Carga de departamentos
-							fetch(process.env.REACT_APP_URL_API_SERVER + "/departamentos.php")
-							.then(res => {
-								if(res.ok && res.status === 200) {
-									res.json().then((data) => {
-										this.setState({
-											departamentos: data
-										}, () => {
-											this.getCiudades(this.state.guia.iddepartamento);
-											this.setState({loading: false});
+								guia: data.data.registros[0]
+							}, () => {
+								//Back //Esto Sirve para volver al Home en el lugar que se inició
+								localStorage.setItem("idDepartamento", this.state.guia.iddepartamento);
+								localStorage.setItem("nombreDepartamento", this.state.guia.nombredepartamento);
+								localStorage.setItem("idCiudad", this.state.guia.idciudad);
+								localStorage.setItem("nombreCiudad", this.state.guia.nombreciudad);
+								//Tipos de Valorización
+								this.setState({
+									tiposcategoriasselect: this.state.guia.idtipocaterias
+								});
+								//Buscar la Valorización
+								this.findValorizacion(this.state.guia.idtipocaterias, this.state.guia.idvalortipcat);
+								//Carga de departamentos
+								fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/departamentos")
+								.then(res => {
+									if(res.ok && res.status === 200) {
+										res.json().then((data) => {
+											this.setState({
+												departamentos: data.data.registros
+											}, () => {
+												this.getCiudades(this.state.guia.iddepartamento);
+												this.setState({loading: false});
+											});
 										});
-									});
-								}
+									}
+								});
 							});
-						});
+						} else {
+							this.setState({
+								loading: false,
+								error: true
+							});
+						}
 					});
 				}
 			});
+			this.toggleTabs('1');
 		} else {
 			this.setState({
 				loading: false,
@@ -325,6 +361,31 @@ class GuiaUpdate extends Component {
 				<option key={"vtc-" + vtc.id} value={vtc.id}>{vtc.descripcion}</option>
 			);
 		});
+		let dataTabs = [
+			//Fiscalización
+			{nombre: "Fiscal", id: "1"},
+			{nombre: "Servicios", id: "4"},
+			{nombre: "Redes", id: "5"},
+			{nombre: "Tarifas", id: "7"},
+			{nombre: "Propietario", id: "8"},
+			{nombre: "Responsable", id: "9"},
+			{nombre: "Notas", id: "10"},
+		];
+		if("WebTurIdTipo" in localStorage) {
+			if(localStorage.getItem("WebTurIdTipo") === "2") { //Si es una admin Web
+				//Web
+				dataTabs.push({nombre: "Descripción", id: "2"});
+				dataTabs.push({nombre: "Geo", id: "3"});
+				dataTabs.push({nombre: "Imágenes", id: "6"});
+			}
+		}
+		const Tabs = dataTabs.map((dT) => {
+			return(
+				<NavItem key={`dT-${dT.id}`}>
+					<NavLink className={classnames({ active: this.state.activeTab === dT.id })} onClick={() => { this.toggleTabs(dT.id); }}>{dT.nombre}</NavLink>
+				</NavItem>
+			);
+		});
 		return(
 			<Container>
 				<Row>
@@ -332,7 +393,7 @@ class GuiaUpdate extends Component {
 						<div className="d-flex align-items-baseline">
 							<Button color="primary" className="mr-2 btn-lg" onClick={(e) => this.props.history.push("/")}><i className="fas fa-arrow-circle-left"></i></Button>
 							<Breadcrumb>
-								<BreadcrumbItem active>Última actualización: {this.state.guia.lupdate}</BreadcrumbItem>
+								<BreadcrumbItem active>Última actualización: {format_date(this.state.guia.lupdate)} ({this.state.guia.nombreusuario})</BreadcrumbItem>
 							</Breadcrumb>
 						</div>
 					</Col>
@@ -347,300 +408,559 @@ class GuiaUpdate extends Component {
 									<Alerta />
 								:
 									<div>
+										<div className="mb-4 bg-dark p-4 text-white">
+											{this.state.guia.legajo} <i className="fas fa-arrow-right"></i> {this.state.guia.nombre}
+										</div>
 										<Form onSubmit={this.handleSubmit} className="pb-5" autoComplete="off">
-											<Row>
-												<Col xs="12" md="4" style={{textAlign: "center", marginBottom: "16px"}}>
-													<img
-														id = "logopreview"
-														src={`${process.env.REACT_APP_URL_API_SERVER}/imgs/logos/${this.state.guia.logo}`}
-														className="img-fluid img-thumbnail"
-														style={{maxHeight: "230px"}}
-														alt="img"
-														onClick={() => {document.getElementById("uploadLogo").click();}}
-													/>
-													<Input id="uploadLogo" name="uploadLogo" type="file" className="d-none" accept="image/*" onChange={this.readURLLogo} />
-													<Input id="id" name="id" type="text" className="d-none" value={this.state.guia.id} readOnly={true} />
-													<Input id="logo" name="logo" type="text" className="d-none" value={this.state.guia.logo} readOnly={true} />
-												</Col>
-												<Col xs="12" md="8">
+											<Nav tabs className="mb-4">
+												{Tabs}
+											</Nav>
+											<TabContent activeTab={this.state.activeTab}>
+												<TabPane tabId="1">
 													<Row>
-														<Col xs="12" md="6">
-															<FormGroup>
-																<Label htmlFor="departamento">Departamento</Label>
-																<Input
-																	type="select"
-																	className="form-control"
-																	id="departamento"
-																	name="departamento"
-																	value={this.state.guia.iddepartamento}
-																	onChange={this.handleDepartamentoChange}
-																>
-																	{departamentos}
-																</Input>
-															</FormGroup>
+														<Col xs="12" md="4" style={{textAlign: "center", marginBottom: "16px"}}>
+															<img
+																id = "logopreview"
+																src={`${process.env.REACT_APP_URL_API_SERVER_2}/logos/${this.state.guia.logo}`}
+																className="img-fluid img-thumbnail"
+																style={{maxHeight: "230px"}}
+																alt="img"
+																onClick={() => {document.getElementById("uploadLogo").click();}}
+															/>
+															<Input id="uploadLogo" name="uploadLogo" type="file" className="d-none" accept="image/*" onChange={this.readURLLogo} />
+															<Input id="id" name="id" type="text" className="d-none" value={this.state.guia.id} readOnly={true} />
+															<Input id="logo" name="logo" type="text" className="d-none" value={this.state.guia.logo} readOnly={true} />
 														</Col>
-														<Col xs="12" md="6">
-															<FormGroup>
-																<Label htmlFor="idciudad">Ciudad</Label>
-																<Input
-																	type="select"
-																	className="form-control"
-																	id="idciudad"
-																	name="idciudad"
-																	value={this.state.guia.idciudad}
-																	onChange={this.handleChange}
-																>
-																	{ciudades}
-																</Input>
-															</FormGroup>
+														<Col xs="12" md="8">
+															<Row>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="departamento">Departamento</Label>
+																		<Input
+																			type="select"
+																			className="form-control"
+																			id="departamento"
+																			name="departamento"
+																			value={this.state.guia.iddepartamento}
+																			onChange={this.handleDepartamentoChange}
+																		>
+																			{departamentos}
+																		</Input>
+																	</FormGroup>
+																</Col>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="idciudad">Ciudad</Label>
+																		<Input
+																			type="select"
+																			className="form-control"
+																			id="idciudad"
+																			name="idciudad"
+																			value={this.state.guia.idciudad}
+																			onChange={this.handleChange}
+																		>
+																			{ciudades}
+																		</Input>
+																	</FormGroup>
+																</Col>
+															</Row>
+															<Row>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="legajo">Legajo</Label>
+																		<Input
+																			type="text"
+																			className="form-control"
+																			id="legajo"
+																			name="legajo"
+																			placeholder=""
+																			value={this.state.guia.legajo}
+																			onChange={this.handleChange}
+																		/>
+																	</FormGroup>
+																</Col>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="idtipo">Tipo</Label>
+																		<Input
+																			type="select"
+																			className="form-control"
+																			id="idtipo"
+																			name="idtipo"
+																			value={this.state.guia.idtipo}
+																			onChange={this.handleChange}
+																		>
+																			{tipos}
+																		</Input>
+																	</FormGroup>
+																</Col>
+															</Row>
+															<Row>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="tipocategorias">Tipo Valorización</Label>
+																		<Input
+																			type="select"
+																			className="form-control"
+																			id="tipocategorias"
+																			name="tipocategorias"
+																			value={this.state.tiposcategoriasselect}
+																			onChange={this.handleTipoCategorias}
+																		>
+																			{categorias}
+																		</Input>
+																	</FormGroup>
+																</Col>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label htmlFor="idvalortipcat">Valorización</Label>
+																		<Input
+																			type="select"
+																			className="form-control"
+																			id="idvalortipcat"
+																			name="idvalortipcat"
+																			value={this.state.valorestipocatselect}
+																			onChange={this.handleValorTipoCatSelect}
+																		>
+																			{valorestipocat}
+																		</Input>
+																	</FormGroup>
+																</Col>
+																
+															</Row>
 														</Col>
 													</Row>
 													<Row>
-														<Col xs="12" md="6">
+														<Col xs="12" md="4">
 															<FormGroup>
-																<Label htmlFor="legajo">Legajo</Label>
+																<Label htmlFor="nombre">Nombre</Label>
 																<Input
 																	type="text"
 																	className="form-control"
-																	id="legajo"
-																	name="legajo"
+																	id="nombre"
+																	name="nombre"
 																	placeholder=""
-																	value={this.state.guia.legajo}
+																	value={this.state.guia.nombre}
 																	onChange={this.handleChange}
 																/>
 															</FormGroup>
 														</Col>
-														<Col xs="12" md="6">
+														<Col xs="12" md="4">
 															<FormGroup>
-																<Label htmlFor="idtipo">Tipo</Label>
-																<Input
-																	type="select"
-																	className="form-control"
-																	id="idtipo"
-																	name="idtipo"
-																	value={this.state.guia.idtipo}
-																	onChange={this.handleChange}
-																>
-																	{tipos}
-																</Input>
-															</FormGroup>
-														</Col>
-													</Row>
-													<Row>
-														<Col xs="12" md="6">
-															<FormGroup>
-																<Label htmlFor="tipocategorias">Tipo Valorización</Label>
-																<Input
-																	type="select"
-																	className="form-control"
-																	id="tipocategorias"
-																	name="tipocategorias"
-																	value={this.state.tiposcategoriasselect}
-																	onChange={this.handleTipoCategorias}
-																>
-																	{categorias}
-																</Input>
-															</FormGroup>
-														</Col>
-														<Col xs="12" md="6">
-															<FormGroup>
-																<Label htmlFor="idvalortipcat">Valorización</Label>
-																<Input
-																	type="select"
-																	className="form-control"
-																	id="idvalortipcat"
-																	name="idvalortipcat"
-																	value={this.state.valorestipocatselect}
-																	onChange={this.handleValorTipoCatSelect}
-																>
-																	{valorestipocat}
-																</Input>
-															</FormGroup>
-														</Col>
-														
-													</Row>
-												</Col>
-											</Row>
-											<Row>
-												<Col xs="12" md="6">
-													<FormGroup>
-														<Label htmlFor="nombre">Nombre</Label>
-														<Input
-															type="text"
-															className="form-control"
-															id="nombre"
-															name="nombre"
-															placeholder=""
-															value={this.state.guia.nombre}
-															onChange={this.handleChange}
-														/>
-													</FormGroup>
-												</Col>
-												<Col xs="12" md="6">
-													<FormGroup>
-														<Label htmlFor="domicilio">Domicilio</Label>
-														<Input
-															type="text"
-															className="form-control"
-															id="domicilio"
-															name="domicilio"
-															placeholder=""
-															value={this.state.guia.domicilio}
-															onChange={this.handleChange}
-														/>
-													</FormGroup>
-												</Col>
-											</Row>
-											<Row>
-												<Col xs="12" md="4">
-													<FormGroup>
-														<Label htmlFor="telefono">Telefono</Label>
-														<Input
-															type="text"
-															className="form-control"
-															id="telefono"
-															name="telefono"
-															placeholder=""
-															value={this.state.guia.telefono}
-															onChange={this.handleChange}
-														/>
-													</FormGroup>
-												</Col>
-												<Col xs="12" md="4">
-													<FormGroup>
-														<Label htmlFor="habitaciones">Habitaciones</Label>
-														<Input
-															type="number"
-															className="form-control"
-															id="habitaciones"
-															name="habitaciones"
-															placeholder=""
-															value={this.state.guia.habitaciones}
-															onChange={this.handleChange}
-															min="0"
-															max="999"
-															style={{textAlign: "right"}}
-														/>
-													</FormGroup>
-												</Col>
-												<Col xs="12" md="4">
-													<FormGroup>
-														<Label htmlFor="plazas">Plazas</Label>
-														<Input
-															type="number"
-															className="form-control"
-															id="plazas"
-															name="plazas"
-															placeholder=""
-															value={this.state.guia.plazas}
-															onChange={this.handleChange}
-															min="0"
-															max="999"
-															style={{textAlign: "right"}}
-														/>
-													</FormGroup>
-												</Col>
-											</Row>
-											<Row>
-												<Col xs="12" md="6">
-													<FormGroup>
-														<Label htmlFor="mail">EMail</Label>
-														<Input
-															type="email"
-															className="form-control"
-															id="mail"
-															name="mail"
-															placeholder=""
-															value={this.state.guia.mail}
-															onChange={this.handleChange}
-														/>
-													</FormGroup>
-												</Col>
-												<Col xs="12" md="6">
-													<FormGroup>
-														<Label htmlFor="web">Página Web</Label>
-														<Input
-															type="text"
-															className="form-control"
-															id="web"
-															name="web"
-															placeholder=""
-															value={this.state.guia.web}
-															onChange={this.handleChange}
-														/>
-													</FormGroup>
-												</Col>
-											</Row>
-											<Row>
-												<Col>
-													<FormGroup>
-														<Label for="descripcion">Descripción</Label>
-														<Input
-															type="textarea"
-															id="descripcion"
-															name="descripcion"
-															placeholder="Breve descripción del alojamiento."
-															value={this.state.guia.descripcion}
-															onChange={this.handleChange}
-															rows="8"
-														/>
-													</FormGroup>
-												</Col>
-											</Row>
-											<Row>
-												<Col xs="12" md="6">
-													<Row>
-														<Col xs="12" md="6">
-															<FormGroup>
-																<Label for="latitud">(GPS) Latitud</Label>
+																<Label htmlFor="domicilio">Domicilio</Label>
 																<Input
 																	type="text"
-																	id="latitud"
-																	name="latitud"
+																	className="form-control"
+																	id="domicilio"
+																	name="domicilio"
 																	placeholder=""
-																	value={this.state.guia.latitud}
+																	value={this.state.guia.domicilio}
 																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="telefono">Teléfono</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="telefono"
+																	name="telefono"
+																	placeholder=""
+																	value={this.state.guia.telefono}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="habitaciones">Habitaciones</Label>
+																<Input
+																	type="number"
+																	className="form-control"
+																	id="habitaciones"
+																	name="habitaciones"
+																	placeholder=""
+																	value={this.state.guia.habitaciones}
+																	onChange={this.handleChange}
+																	min="0"
+																	max="999"
 																	style={{textAlign: "right"}}
 																/>
 															</FormGroup>
 														</Col>
-														<Col xs="12" md="6">
+														<Col xs="12" md="4">
 															<FormGroup>
-																<Label for="longitud">(GPS) Longitud</Label>
+																<Label htmlFor="plazas">Plazas</Label>
 																<Input
-																	type="text"
-																	id="longitud"
-																	name="longitud"
+																	type="number"
+																	className="form-control"
+																	id="plazas"
+																	name="plazas"
 																	placeholder=""
-																	value={this.state.guia.longitud}
+																	value={this.state.guia.plazas}
 																	onChange={this.handleChange}
+																	min="0"
+																	max="999"
+																	style={{textAlign: "right"}}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="camas">Camas</Label>
+																<Input
+																	type="number"
+																	className="form-control"
+																	id="camas"
+																	name="camas"
+																	placeholder=""
+																	value={this.state.guia.camas}
+																	onChange={this.handleChange}
+																	min="0"
+																	max="999"
 																	style={{textAlign: "right"}}
 																/>
 															</FormGroup>
 														</Col>
 													</Row>
 													<Row>
-														<Col xs="12" md="12">
-															<div style={{width: "100%", height: "400px", marginBottom: "16px"}}>
-																<GoogleMapReact
-																	bootstrapURLKeys={{ key: "AIzaSyBz_U9Hg3ZbPW4o0JJ_I__ooGT7RcI0FBU" }}
-																	defaultCenter={center}
-																	defaultZoom={17}
-																>
-																	<Marca lat={this.state.guia.latitud} lng={this.state.guia.longitud} text={titulo} />
-																</GoogleMapReact>
-															</div>
+														<Col xs="12" md="6">
+															<FormGroup>
+																<Label htmlFor="mail">EMail</Label>
+																<Input
+																	type="email"
+																	className="form-control"
+																	id="mail"
+																	name="mail"
+																	placeholder=""
+																	value={this.state.guia.mail}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="6">
+															<FormGroup>
+																<Label htmlFor="web">Página Web</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="web"
+																	name="web"
+																	placeholder=""
+																	value={this.state.guia.web}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
 														</Col>
 													</Row>
-												</Col>
-												<Col xs="12" md="6">
-													<Servicios idGuia={this.state.id} menu={true} advertencia={true} />
-												</Col>
-											</Row>
+												</TabPane>
+												<TabPane tabId="2">
+													<Row>
+														<Col>
+															<FormGroup>
+																<Label for="descripcion">Descripción</Label>
+																<Input
+																	type="textarea"
+																	id="descripcion"
+																	name="descripcion"
+																	placeholder="Breve descripción del alojamiento."
+																	value={this.state.guia.descripcion}
+																	onChange={this.handleChange}
+																	rows="8"
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="3">
+													<Row>
+														<Col>
+															<Row>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label for="latitud">(GPS) Latitud</Label>
+																		<Input
+																			type="text"
+																			id="latitud"
+																			name="latitud"
+																			placeholder=""
+																			value={this.state.guia.latitud}
+																			onChange={this.handleChange}
+																			style={{textAlign: "right"}}
+																		/>
+																	</FormGroup>
+																</Col>
+																<Col xs="12" md="6">
+																	<FormGroup>
+																		<Label for="longitud">(GPS) Longitud</Label>
+																		<Input
+																			type="text"
+																			id="longitud"
+																			name="longitud"
+																			placeholder=""
+																			value={this.state.guia.longitud}
+																			onChange={this.handleChange}
+																			style={{textAlign: "right"}}
+																		/>
+																	</FormGroup>
+																</Col>
+															</Row>
+															<Row>
+																<Col>
+																	<div style={{width: "100%", height: "400px", marginBottom: "16px"}}>
+																		<GoogleMapReact
+																			bootstrapURLKeys={{ key: "AIzaSyBz_U9Hg3ZbPW4o0JJ_I__ooGT7RcI0FBU" }}
+																			defaultCenter={center}
+																			defaultZoom={17}
+																		>
+																			<Marca lat={this.state.guia.latitud} lng={this.state.guia.longitud} text={titulo} />
+																		</GoogleMapReact>
+																	</div>
+																</Col>
+															</Row>
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="4">
+													<Row>
+														<Col>
+															<Servicios idGuia={this.state.id} menu={true} advertencia={true} />
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="5">
+													<Row>
+														<Col>
+															<Redes idGuia={this.state.id} menu={true} advertencia={true} />
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="6">
+													<Row>
+														<Col>
+															<Galeria idGoG="1" idGaleria={this.state.id} />
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="7">
+													<Row>
+														<Col>
+															<Tarifas idGuia={this.state.id} menu={true} advertencia={true} />
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="8">
+													<Row>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="p_nombre">Apellido y Nombre</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="p_nombre"
+																	name="p_nombre"
+																	placeholder=""
+																	value={this.state.guia.p_nombre}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="p_domicilio">Domicilio</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="p_domicilio"
+																	name="p_domicilio"
+																	placeholder=""
+																	value={this.state.guia.p_domicilio}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="p_dni">DNI</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="p_dni"
+																	name="p_dni"
+																	placeholder=""
+																	value={this.state.guia.p_dni}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+													<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="p_telefono">Teléfono</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="p_telefono"
+																	name="p_telefono"
+																	placeholder=""
+																	value={this.state.guia.p_telefono}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="8">
+															<FormGroup>
+																<Label htmlFor="p_mail">EMail</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="p_mail"
+																	name="p_mail"
+																	placeholder=""
+																	value={this.state.guia.p_mail}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="9">
+												<Row>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_nombre">Apellido y Nombre</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_nombre"
+																	name="r_nombre"
+																	placeholder=""
+																	value={this.state.guia.r_nombre}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_domicilio">Domicilio</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_domicilio"
+																	name="r_domicilio"
+																	placeholder=""
+																	value={this.state.guia.r_domicilio}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_dni">DNI</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_dni"
+																	name="r_dni"
+																	placeholder=""
+																	value={this.state.guia.r_dni}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_telefono">Teléfono</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_telefono"
+																	name="r_telefono"
+																	placeholder=""
+																	value={this.state.guia.r_telefono}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="8">
+															<FormGroup>
+																<Label htmlFor="r_mail">EMail</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_mail"
+																	name="r_mail"
+																	placeholder=""
+																	value={this.state.guia.r_mail}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_cargo">Cargo</Label>
+																<Input
+																	type="text"
+																	className="form-control"
+																	id="r_cargo"
+																	name="r_cargo"
+																	placeholder=""
+																	value={this.state.guia.r_cargo}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+														<Col xs="12" md="4">
+															<FormGroup>
+																<Label htmlFor="r_vencimiento">Caducidad del Contrato</Label>
+																<Input
+																	type="date"
+																	className="form-control"
+																	id="r_vencimiento"
+																	name="r_vencimiento"
+																	placeholder=""
+																	value={this.state.guia.r_vencimiento}
+																	onChange={this.handleChange}
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+												</TabPane>
+												<TabPane tabId="10">
+													<Row>
+														<Col>
+															<FormGroup>
+																<Label for="notas">Notas</Label>
+																<Input
+																	type="textarea"
+																	id="notas"
+																	name="notas"
+																	placeholder="Notas internas, observaciones, datos de utilidad, etc."
+																	value={this.state.guia.notas}
+																	onChange={this.handleChange}
+																	rows="8"
+																/>
+															</FormGroup>
+														</Col>
+													</Row>
+												</TabPane>
+											</TabContent>
 											<Button color="primary" type="submit" className="float-right">Guardar Cambios</Button>
 										</Form>
-										<hr/>
-										<Galeria idGoG="1" idGaleria={this.state.id} />
+										<style jsx="true">{`
+											.nav-link {
+												cursor: pointer;
+											}
+										`}</style>
 									</div>
 						}
 					</Col>

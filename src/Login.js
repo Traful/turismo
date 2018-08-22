@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Button, Form, FormGroup, Label, Input, Alert } from "reactstrap";
 
 class Login extends Component {
 	constructor(props) {
@@ -7,8 +6,8 @@ class Login extends Component {
 		this.state = {
 			error: false,
 			dataForm: {
-				email: "",
-				password: ""
+				email: "hansjal@gmail.com",
+				password: "quilmes"
 			}
 		};
 		this.handleSubmit = this.handleSubmit.bind(this);
@@ -17,10 +16,12 @@ class Login extends Component {
 
 	handleSubmit = (event) => {
 		event.preventDefault();
-		const data = new FormData(event.target);
-		fetch(process.env.REACT_APP_URL_API_SERVER + "/login.php", {
+		fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/user/login`, {
+			headers: new Headers({
+				"Content-Type": "application/json"
+			}),
 			method: "POST",
-			body: data
+			body: JSON.stringify(this.state.dataForm)
 		})
 		.then(res => {
 			if(res.ok && res.status === 200) {
@@ -30,17 +31,25 @@ class Login extends Component {
 							error: true
 						});
 					} else {
-						localStorage.setItem("WebTurId", data.id);
-						localStorage.setItem("WebTurNombre", data.nombre);
-						localStorage.setItem("WebTurToken", data.token);
+						localStorage.setItem("WebTurId", data.data.id);
+						localStorage.setItem("WebTurIdTipo", data.data.idtipo);
+						localStorage.setItem("WebTurNombre", data.data.nombre);
+						localStorage.setItem("WebTurToken", data.data.token);
 						this.props.ok();
 					}
+				});
+			} else {
+				this.setState({
+					error: true
 				});
 			}
 		});
 	}
 
 	handleChange = (event) => {
+		if(this.state.error) {
+			this.setState({error: false});
+		}
 		const target = event.target;
 		const value = target.type === "checkbox" ? target.checked : target.value;
 		const name = target.name;
@@ -56,56 +65,53 @@ class Login extends Component {
 		const err = this.state.error;
 		return (
 			<div className="Login">
-				<Container>
-					<Row className="justify-content-center mb-4 bg-info rounded">
-						<Col xs="12" md="4">
-							<h1 className="display-5 text-center text-white">Turismo SL</h1>
-						</Col>
-					</Row>
-					<Row className="justify-content-center mb-4">
-						<Col xs="12" md="4">
-							<Form onSubmit={this.handleSubmit} className="shadow p-3 pb-5 mb-5 bg-white rounded" autoComplete="off">
-								<FormGroup>
-									<Label htmlFor="email">Email</Label>
-									<Input
-										type="email"
-										className="form-control"
-										id="email"
-										name="email"
-										placeholder="Dirección de correo electrónico"
-										value={this.state.dataForm.email}
-										onChange={this.handleChange}
-									/>
-								</FormGroup>
-								<FormGroup>
-									<Label htmlFor="password">Contraseña</Label>
-									<Input
-										type="password"
-										className="form-control"
-										id="password"
-										name="password"
-										placeholder="Contraseña"
-										value={this.state.dataForm.password}
-										onChange={this.handleChange}
-									/>
-								</FormGroup>
-								<Button color="primary" type="submit" className="float-right">Enviar</Button>
-							</Form>
-						</Col>
-					</Row>
-					{
-						err ?
-						<Row className="justify-content-center">
-							<Col xs="12" md="4">
-								<Alert color="warning">
-									Dirección de correo electrónico o contraseña no válido/s.
-								</Alert>
-							</Col>
-						</Row>
-						:
-						""
-					}
-				</Container>
+				<div className="container" style={{height: "100vh"}}>
+					<div className="row pt-5 align-items-center">
+						<div className="col">
+							<div className="d-flex justify-content-center mb-4">
+								<img src={`${process.env.REACT_APP_URL_API_SERVER_2}/imgs/LogoSisTur2.svg`} alt="SisTur" />
+							</div>
+							<div className="text-white p-4 rounded mx-auto" style={{width: "350px"}}>
+								<div className="mx-auto bg-white text-dark cincuenta mb-4">
+									<i className="fas fa-question text-info"></i>
+								</div>
+								<div>
+									<form onSubmit={this.handleSubmit} autocomplete="off">
+										<div className="form-group">
+											<label for="email">Email</label>
+											<input type="email" name="email" id="email" className="form-control" placeholder="nombre@ejemplo.com" value={this.state.dataForm.email} onChange={this.handleChange} />
+										</div>
+										<div className="form-group">
+											<label for="password">Contraseña</label>
+											<input type="password" name="password" id="password" className="form-control" value={this.state.dataForm.password} onChange={this.handleChange} />
+										</div>
+										<div className="d-flex justify-content-end">
+											<button type="submit" className="btn btn-info mb-2">Confirmar</button>
+										</div>
+									</form>
+								</div>
+							</div>
+							{
+								err ?
+								<div>
+									<div className="bg-danger pt-4 pb-4 mb-2 mx-auto rounded" style={{width: "350px"}}>
+										<div className="text-center text-white">Español: He vo vieja! pone bien lo dedo!</div>
+										<div className="text-center text-white">Brasileiro: Voce so un scroto digitando!</div>
+										<div className="text-center text-white">Inglish (Indian): Can yu use good teclado?</div>
+										<div className="text-center text-white">Russin: Mielden lapen puten madren!</div>
+										<div className="text-center text-white">Chino (-.-): <span lang="zh-Hans">你會死的</span></div>
+									</div>
+									<div className="bg-warning p-4 mx-auto rounded" style={{width: "350px"}}>
+										<p className="mb-0 text-center">Si usted no entiende Chino tradicional puede consultar en el supermercado chino de su barrio.</p>
+									</div>
+								</div>
+								:
+								""
+							}
+							
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}

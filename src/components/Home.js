@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import { Container, Row, Col, Breadcrumb, BreadcrumbItem } from "reactstrap";
 import Loading from "../utils/loading";
 import Depatamentos from "./subcomponentes/Departamentos";
@@ -95,13 +96,24 @@ class Home extends Component {
 								<Ciudades idDepartamento={idDepartamento} notificar={true} handleEventClick={this.handleCiudadesClick} />
 							</Col>
 							<Col xs="12" md="9">
-								<Breadcrumb>
-									<BreadcrumbItem>{nombreDepartamento}</BreadcrumbItem>
-									<BreadcrumbItem>{nombreCiudad}</BreadcrumbItem>
-								</Breadcrumb>
-								<br />
-								<Guias idCiudad={idCiudad} />
-								<br />
+								<Row>
+									<Col xs="9">
+										<Breadcrumb>
+											<BreadcrumbItem>{nombreDepartamento}</BreadcrumbItem>
+											<BreadcrumbItem>{nombreCiudad}</BreadcrumbItem>
+										</Breadcrumb>
+									</Col>
+									<Col xs="3" style={{textAlign: "right"}}>
+										<Link to="/nuevo" className="btn btn-warning btn-lg">
+											<i className="far fa-newspaper"></i>
+										</Link>
+									</Col>
+								</Row>
+								<Row>
+									<Col>
+										<Guias idCiudad={idCiudad} />
+									</Col>
+								</Row>
 							</Col>
 						</Row>
 					</Container>

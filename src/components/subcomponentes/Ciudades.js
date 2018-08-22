@@ -39,22 +39,20 @@ class Ciudades extends Component {
                 }
             });
         } else {
-            fetch(process.env.REACT_APP_URL_API_SERVER + "/ciudades.php?idDep=" + idDepartamento)
+            fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/ciudades/departamento/" + idDepartamento, {
+                headers: new Headers({
+                    "Authorization": localStorage.getItem("WebTurToken")
+                })
+            })
             .then(res => {
                 if(res.ok && res.status === 200) {
                     res.json().then((data) => {
-                        let datos = data.map((d) => {
-                            return {
-                                id: d.id,
-                                nombre: d.nombre
-                            }
-                        });
                         this.setState({
                             loading: false,
-                            ciudades: datos,
+                            ciudades: data.data.registros,
                             selected: {
-                                id: datos[0].id,
-                                nombre: datos[0].nombre
+                                id: data.data.registros[0].id,
+                                nombre: data.data.registros[0].nombre
                             }
                         });
                     });

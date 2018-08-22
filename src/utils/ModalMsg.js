@@ -11,6 +11,26 @@ class ModalMsg extends Component {
         };
     }
 
+    componentDidMount() {
+        this.setState({
+            open: this.props.open,
+            msg: this.props.msg,
+            onlyOk: this.props.onlyOk
+        });
+    }
+
+    componentWillUpdate(prevProps) {
+        if(this.props.msg !== prevProps.msg) {
+            this.setState({msg: this.props.msg});
+        }
+        if(this.props.onlyOk !== prevProps.onlyOk) {
+            this.setState({onlyOk: this.props.onlyOk});
+        }
+        if(this.props.open !== prevProps.open) {
+            this.setState({open: this.props.open});
+        }
+    }
+
     componentDidUpdate(prevProps) {
         if(this.props.msg !== prevProps.msg) {
             this.setState({msg: this.props.msg});
@@ -31,7 +51,7 @@ class ModalMsg extends Component {
                 <Modal isOpen={this.state.open} toggle={this.toggle}>
                     <ModalHeader toggle={this.toggle}>{this.props.titulo}</ModalHeader>
                     <ModalBody>
-                        <p>{msg}</p>
+                        <div>{msg}</div>
                         {this.props.children}
                     </ModalBody>
                     <ModalFooter>

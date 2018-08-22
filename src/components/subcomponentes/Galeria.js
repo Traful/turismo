@@ -25,20 +25,18 @@ class Galeria extends Component {
     }
 
     handleImgChange = (event) => {
-        //const data = new FormData(event.target);
-        //data.append("imgup", this.state.selectedFile, this.state.selectedFile.name)
         const data = new FormData();
         data.append("imgup", event.target.files[0]);
-        data.append("idGaleria", this.state.idGaleria);
-        fetch(`${process.env.REACT_APP_URL_API_SERVER}/addgaleria.php`, {
+        fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/imagen/${this.state.idGoG}/${this.state.idGaleria}`, {
             method: "POST",
-			headers: {
-				"Authorization": localStorage.getItem("WebTurToken")
-			},
-			body: data
+            headers: {
+                "Authorization": localStorage.getItem("WebTurToken"),
+                //"Content-Type": "multipart/form-data"
+            },
+            body: data
         })
         .then(res => {
-            if(res.ok && res.status === 200) {
+            if(res.ok && res.status === 201) {
                 this.setState({
                     loading: true
                 }, () => {
@@ -65,8 +63,8 @@ class Galeria extends Component {
             }
         });
         //alert(`Eliminar: ${this.state.modal.idDelete}`);
-        fetch(`${process.env.REACT_APP_URL_API_SERVER}/delgaleria.php?idGaleria=${this.state.modal.idDelete}`, {
-            method: "GET",
+        fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/imagen/${this.state.modal.idDelete}`, {
+            method: "DELETE",
 			headers: {
 				"Authorization": localStorage.getItem("WebTurToken")
 			}
@@ -77,6 +75,10 @@ class Galeria extends Component {
                     loading: true
                 }, () => {
                     this.findGalery();
+                });
+            } else {
+                res.json().then((data) => {
+                    alert(data.errMsg);
                 });
             }
         });
@@ -94,12 +96,12 @@ class Galeria extends Component {
     }
 
     findGalery = () => {
-        fetch(`${process.env.REACT_APP_URL_API_SERVER}/galeria.php?idGoG=${this.props.idGoG}&idGaleria=${this.props.idGaleria}`)
+        fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/${this.props.idGaleria}/imagenes`)
         .then(res => {
             if(res.ok && res.status === 200) {
                 res.json().then((data) => {
                     this.setState({
-                        galeria: data,
+                        galeria: data.data.registros,
                         idGoG: this.props.idGoG,
                         idGaleria: this.props.idGaleria,
                         loading: false
@@ -120,7 +122,7 @@ class Galeria extends Component {
             return(
                 <Col xs="6" md="3" key={`g-${g.id}`}>
                     <Card inverse className="mb-4">
-                        <CardImg width="100%" className="img-card" src={`${process.env.REACT_APP_URL_API_SERVER}/imgs/galeria/${g.imagen}`} alt="Img" />
+                        <CardImg width="100%" className="img-card" src={`${process.env.REACT_APP_URL_API_SERVER_2}/imagenes/${g.imagen}`} alt="Img" />
                         <CardImgOverlay>
                             <Button className="close bg-dark p-2 rounded" aria-label="Close" onClick={(e) => this.askDelete(g.id, g.imagen, e)}>
                                 <span aria-hidden="true">&times;</span>

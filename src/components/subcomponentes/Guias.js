@@ -47,23 +47,20 @@ class Guias extends Component {
                 guias: []
             });
         } else {
-            fetch(process.env.REACT_APP_URL_API_SERVER + "/guias.php?idCity=" + idCiudad)
+            fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/guias/ciudad/" + idCiudad, {
+                headers: new Headers({
+                    "Authorization": localStorage.getItem("WebTurToken")
+                })
+            })
             .then(res => {
                 if(res.ok && res.status === 200) {
                     res.json().then((data) => {
-                        let datos = data.map((d) => {
+                        let datos = data.data.registros.map((d) => {
                             return {
                                 id: d.id,
                                 legajo: d.legajo,
                                 nombre: d.nombre,
                                 estilo: {display: "table-row"}
-                                //Cambiar en la api para que solo devuelva estos datos!
-                                /*,
-                                domicilio: d.domicilio,
-                                telefono: d.telefono,
-                                email: d.mail,
-                                web: d.web
-                                */
                             }
                         });
                         this.setState({

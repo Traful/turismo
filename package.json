@@ -2,6 +2,7 @@
   "name": "sis-tur",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "google-map-react": "^1.0.6",
     "react": "^16.4.1",

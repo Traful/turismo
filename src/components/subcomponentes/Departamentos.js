@@ -29,22 +29,21 @@ class Departamentos extends Component {
 
     componentDidMount() {
         //Obtener todos los Departamentos
-        fetch(process.env.REACT_APP_URL_API_SERVER + "/departamentos.php")
+        fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/departamentos/provincia/1", {
+            method: "GET",
+            headers: new Headers({
+                "Authorization": localStorage.getItem("WebTurToken")
+            })
+        })
         .then(res => {
             if(res.ok && res.status === 200) {
                 res.json().then((data) => {
-                    let datos = data.map((d) => {
-                        return {
-                            id: d.id,
-                            nombre: d.nombre
-                        }
-                    });
                     this.setState({
                         loading: false,
-                        departamentos: datos,
+                        departamentos: data.data.registros,
                         selected: {
-                            id: datos[0].id,
-                            nombre: datos[0].nombre
+                            id: data.data.registros[0].id,
+                            nombre: data.data.registros[0].nombre
                         }
                     });
                 });
