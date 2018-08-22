@@ -50,7 +50,7 @@ class GuiaUpdate extends Component {
 			id: 0,
 			tipos: [{id: 0, descripcion: "Loading..."}],
 			guia: {
-				galeria: []
+				galeria: [] //wtf??
 			},
 			departamentos: [],
 			ciudades: [],
@@ -69,6 +69,7 @@ class GuiaUpdate extends Component {
 		this.readURLLogo = this.readURLLogo.bind(this);
 		this.handleMsgOk = this.handleMsgOk.bind(this);
 		this.toggleTabs = this.toggleTabs.bind(this);
+		this.subirFormulario = this.subirFormulario.bind(this);
 	}
 
 	/*
@@ -177,10 +178,11 @@ class GuiaUpdate extends Component {
 		});
 	}
 
-	handleSubmit = (event) => {
-		event.preventDefault();
-		const data = new FormData(event.target);
+	subirFormulario = () => {
+		console.log(this.state.guia);
+		//const data = new FormData(event.target);
 		//Acomodar a la nueva API!
+		/*
 		fetch(process.env.REACT_APP_URL_API_SERVER + "/guiaupdate.php", {
 			method: "POST",
 			headers: {
@@ -215,6 +217,11 @@ class GuiaUpdate extends Component {
 				});
 			}
 		});
+		*/
+	}
+
+	handleSubmit = (event) => {
+		event.preventDefault();
 	}
 
 	handleChange = (event) => {
@@ -364,12 +371,12 @@ class GuiaUpdate extends Component {
 		let dataTabs = [
 			//Fiscalización
 			{nombre: "Fiscal", id: "1"},
-			{nombre: "Servicios", id: "4"},
-			{nombre: "Redes", id: "5"},
-			{nombre: "Tarifas", id: "7"},
 			{nombre: "Propietario", id: "8"},
 			{nombre: "Responsable", id: "9"},
 			{nombre: "Notas", id: "10"},
+			{nombre: "Servicios", id: "4"},
+			{nombre: "Redes", id: "5"},
+			{nombre: "Tarifas", id: "7"}
 		];
 		if("WebTurIdTipo" in localStorage) {
 			if(localStorage.getItem("WebTurIdTipo") === "2") { //Si es una admin Web
@@ -645,15 +652,22 @@ class GuiaUpdate extends Component {
 														<Col xs="12" md="6">
 															<FormGroup>
 																<Label htmlFor="web">Página Web</Label>
-																<Input
-																	type="text"
-																	className="form-control"
-																	id="web"
-																	name="web"
-																	placeholder=""
-																	value={this.state.guia.web}
-																	onChange={this.handleChange}
-																/>
+																<div className="input-group">
+																	<Input
+																		type="text"
+																		className="form-control"
+																		id="web"
+																		name="web"
+																		placeholder=""
+																		value={this.state.guia.web}
+																		onChange={this.handleChange}
+																	/>
+																	<div className="input-group-append">
+																		<span className="input-group-text" id="inputGroupPrepend">
+																			<a href={`http://${this.state.guia.web}`} target="_blank"><i className="fas fa-link"></i></a>
+																		</span>
+																	</div>
+																</div>
 															</FormGroup>
 														</Col>
 													</Row>
@@ -799,7 +813,7 @@ class GuiaUpdate extends Component {
 														</Col>
 													</Row>
 													<Row>
-													<Col xs="12" md="4">
+														<Col xs="12" md="4">
 															<FormGroup>
 																<Label htmlFor="p_telefono">Teléfono</Label>
 																<Input
@@ -830,7 +844,7 @@ class GuiaUpdate extends Component {
 													</Row>
 												</TabPane>
 												<TabPane tabId="9">
-												<Row>
+													<Row>
 														<Col xs="12" md="4">
 															<FormGroup>
 																<Label htmlFor="r_nombre">Apellido y Nombre</Label>
@@ -954,7 +968,7 @@ class GuiaUpdate extends Component {
 													</Row>
 												</TabPane>
 											</TabContent>
-											<Button color="primary" type="submit" className="float-right">Guardar Cambios</Button>
+											<Button color="primary" type="button" className="float-right" onClick={this.subirFormulario}>Guardar Cambios</Button>
 										</Form>
 										<style jsx="true">{`
 											.nav-link {

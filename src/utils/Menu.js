@@ -58,7 +58,7 @@ class Menu extends Component {
 
     render() {
         return(
-            <div className="Menu">
+            <div className="Menu mb-3">
                 <div className="menu-icon" onClick={this.handleMenuClick}>
                     <span className="menu-icon__line menu-icon__line-left"></span>
                     <span className="menu-icon__line"></span>

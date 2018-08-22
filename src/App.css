@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
 body {
   margin: 0;
   padding: 0;
   background-color: #1e2023;
-  font-family: "Fira Sans", sans-serif;
+  /*font-family: "Fira Sans", sans-serif;*/
+  font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /*

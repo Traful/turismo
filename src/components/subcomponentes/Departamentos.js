@@ -68,7 +68,7 @@ class Departamentos extends Component {
                                         departamentos.map((element) => {
                                             return(
                                                 <Button block key={element.id} tag="button" className="bg-info text-white" onClick={(e) => this.handleDepartamentoClick(element.id, element.nombre, e)}>
-                                                    <strong>{element.nombre}</strong>
+                                                    {element.nombre}
                                                 </Button>
                                             );
                                         })

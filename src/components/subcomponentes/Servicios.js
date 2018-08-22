@@ -13,13 +13,39 @@ class Servicios extends Component {
             idGuia: this.props.idGuia,
             allServicios: [{id: 0, descripcion: "S/Datos", visible: false}],
             allServiciosSelected: 0,
-            guiaServicios: []
+            guiaServicios: [],
+            capacidad: 0
         };
         this.findServicios = this.findServicios.bind(this);
         this.handleAllServiciosChange = this.handleAllServiciosChange.bind(this);
         this.handleAddService = this.handleAddService.bind(this);
         this.handleDeleteService = this.handleDeleteService.bind(this);
         this.procesar = this.procesar.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange = (event) => {
+        const target = event.target;
+		const name = target.name;
+		var value = target.type === "checkbox" ? target.checked : target.value;
+		if(target.type === "number") {
+			if(value === "") {
+				value = 0;
+			} else {
+				if(isFinite(value)) {
+					let x = parseFloat(value, 10);
+					if(x < 0) {
+						x = 0;
+					}
+					value = x; //Por algun motivo queda un 0 ver!
+				} else {
+					value = 0;
+				}
+			}
+		}
+		this.setState({
+				[name]: value
+		});
     }
 
     handleAddService = (event) => {
@@ -30,8 +56,10 @@ class Servicios extends Component {
             fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/${this.state.idGuia}/servicio/add/${this.state.allServiciosSelected}`, {
                 method: "POST",
                 headers: {
-                    "Authorization": localStorage.getItem("WebTurToken")
-                }
+                    "Authorization": localStorage.getItem("WebTurToken"),
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({capacidad: this.state.capacidad})
             })
             .then(res => {
                 if(res.ok && res.status === 201) {
@@ -188,11 +216,18 @@ class Servicios extends Component {
                 <span key={`Serv-${gserv.id}`} className="badge badge-pill badge-primary d-flex align-items-center">
                     <strong className="mr-2">{gserv.descripcion}</strong>
                     {
-                         menu
-                         ?
-                         <i className="fas fa-times-circle" onClick={this.handleDeleteService.bind(this, gserv.id)}></i>
-                         :
-                         ""
+                        gserv.capacidad > 0
+                        ?
+                        <strong>({gserv.capacidad})&nbsp;&nbsp;</strong>
+                        :
+                        ""
+                    }
+                    {
+                        menu
+                        ?
+                        <i className="fas fa-times-circle" onClick={this.handleDeleteService.bind(this, gserv.id)}></i>
+                        :
+                        ""
                     }
                 </span>
             );
@@ -207,15 +242,28 @@ class Servicios extends Component {
                         <Row>
                             <Col xs="12" md="12">
                                 <div className="d-flex flex-column justify-content-start mb-3">
-                                    <label>Servicios (Faltan agregar CAPACIDAD)</label>
+                                    <label>Servicios</label>
                                     {
                                         menu && menu_opt_sistema
                                         ?
-                                        <div className="d-flex flex-nowrap justify-content-start">
-                                            <select className="form-control" value={this.state.allServiciosSelected} onChange={this.handleAllServiciosChange}>
-                                                {opciones}
-                                            </select>
-                                            <button className="btn btn-primary ml-2" onClick={this.handleAddService}><i className="fas fa-arrow-circle-down"></i></button>
+                                        <div className="row">
+                                            <div className="col-xs-6 col-md-4">
+                                                <div className="form-group">
+                                                    <label htmlFor="idservicio">Tipo</label>
+                                                    <select className="form-control" name="idservicio" id="idservicio" value={this.state.allServiciosSelected} onChange={this.handleAllServiciosChange}>
+                                                        {opciones}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-4">
+                                                <div className="form-group">
+                                                    <label htmlFor="capacidad">Capacidad</label>
+                                                    <input type="number" className="form-control" name="capacidad" id="capacidad" value={this.state.capacidad} onChange={this.handleChange} style={{textAlign: "right"}}/>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-1 d-flex justify-content-end align-items-center">
+                                                <button type="button" className="btn btn-primary ml-2 mt-2" onClick={this.handleAddService}><i className="fas fa-arrow-circle-down"></i></button>
+                                            </div>
                                         </div>
                                         :
                                         ""

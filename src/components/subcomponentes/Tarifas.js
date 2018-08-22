@@ -13,48 +13,77 @@ class Tarifas extends Component {
             idGuia: this.props.idGuia,
             allTarifas: [{id: 0, descripcion: "S/Datos", visible: false}],
             allTarifasSelected: 0,
-            guiaTarifas: []
+            guiaTarifas: [],
+            importe: 0,
+            desayuno: false
         };
         this.findTarifas = this.findTarifas.bind(this);
         this.handleAllTarifasChange = this.handleAllTarifasChange.bind(this);
         this.handleAddTarifa = this.handleAddTarifa.bind(this);
         this.handleDeleteTarifa = this.handleDeleteTarifa.bind(this);
         this.procesar = this.procesar.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange = (event) => {
+        const target = event.target;
+		const name = target.name;
+		var value = target.type === "checkbox" ? target.checked : target.value;
+		if(target.type === "number") {
+			if(value === "") {
+				value = 0;
+			} else {
+				if(isFinite(value)) {
+					let x = parseFloat(value, 10);
+					if(x < 0) {
+						x = 0;
+					}
+					value = x; //Por algun motivo queda un 0 ver!
+				} else {
+					value = 0;
+				}
+			}
+		}
+		this.setState({
+				[name]: value
+		});
     }
 
     handleAddTarifa = (event) => {
-        /*
-        event.preventDefault();
         this.setState({
             loading: true
         }, () => {
-            fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/${this.state.idGuia}/servicio/add/${this.state.allTarifasSelected}`, {
+            fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/${this.state.idGuia}/tarifa/add/${this.state.allTarifasSelected}`, {
                 method: "POST",
                 headers: {
-                    "Authorization": localStorage.getItem("WebTurToken")
-                }
+                    "Authorization": localStorage.getItem("WebTurToken"),
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({importe: this.state.importe, desayuno: this.state.desayuno})
             })
             .then(res => {
                 if(res.ok && res.status === 201) {
                     this.findTarifas();
+                    this.setState({
+                        importe: 0,
+                        desayuno: false
+                    });
                 } else {
-                    /
+                    /*
                         Error (Posible 409 - Conflicto la tarifa ya existe en la guia)
                         No debería ocurrir dada la lógica del componente el cual oculta
                         las Tarifas que ya posee la guia de la seleccion para agregar.
-                    /
+                    */
                 }
             });
         });
-        */
     }
 
     handleDeleteTarifa = (id) => {
-        /*
         this.setState({
             loading: true
         }, () => {
-            fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/servicio/${id}`, {
+            fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/tarifa/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": localStorage.getItem("WebTurToken")
@@ -64,7 +93,6 @@ class Tarifas extends Component {
                 this.findTarifas();
             });
         });
-        */
     }
 
     handleAllTarifasChange = (event) => {
@@ -100,7 +128,6 @@ class Tarifas extends Component {
                 loading: false
             });
         } else {
-            console.log("Aca!");
             this.setState({
                 menu_opt_sistema: true,
                 allTarifas: alse,
@@ -190,16 +217,22 @@ class Tarifas extends Component {
         });
         const Tarifas = this.state.guiaTarifas.map((gserv) => {
             return(
-                <span key={`Serv-${gserv.id}`} className="badge badge-pill badge-primary d-flex align-items-center">
-                    <strong className="mr-2">{gserv.descripcion}</strong>
-                    {
-                         menu
-                         ?
-                         <i className="fas fa-times-circle" onClick={this.handleDeleteTarifa.bind(this, gserv.id)}></i>
-                         :
-                         ""
-                    }
-                </span>
+                <li key={`Serv-${gserv.id}`} className="list-group-item">
+                    <div className="row">
+                        <div className="col">{gserv.descripcion}</div>
+                        <div className="col">$ {gserv.importe}</div>
+                        <div className="col">{gserv.desayuno ? "Con Desayuno" : "Sin Desayuno"}</div>
+                        {
+                            menu
+                            ?
+                            <div className="col d-flex justify-content-end">
+                                <i className="fas fa-trash btnDeleteTarifa" onClick={this.handleDeleteTarifa.bind(this, gserv.id)}></i>
+                            </div>
+                            :
+                            <div className="col"></div>
+                        }
+                    </div>
+                </li>
             );
         });
         return(
@@ -216,19 +249,39 @@ class Tarifas extends Component {
                                     {
                                         menu && menu_opt_sistema
                                         ?
-                                        <div className="d-flex flex-nowrap justify-content-start">
-                                            <select className="form-control" value={this.state.allTarifasSelected} onChange={this.handleAllTarifasChange}>
-                                                {opciones}
-                                            </select>
-                                            <button className="btn btn-primary ml-2" onClick={this.handleAddTarifa}><i className="fas fa-arrow-circle-down"></i></button>
+                                        <div className="row">
+                                            <div className="col-xs-6 col-md-3">
+                                                <div className="form-group">
+                                                    <label htmlFor="idtarifa">Tipo</label>
+                                                    <select className="form-control" name="idtarifa" id="idtarifa" value={this.state.allTarifasSelected} onChange={this.handleAllTarifasChange}>
+                                                        {opciones}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-3">
+                                                <div className="form-group">
+                                                    <label htmlFor="importe">Importe</label>
+                                                    <input type="number" className="form-control" name="importe" id="importe" value={this.state.importe} onChange={this.handleChange} style={{textAlign: "right"}}/>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-3">
+                                                <label htmlFor="idtarifa">Desayuno</label>
+                                                <div className="form-check mb-2 pt-2">
+                                                    <input type="checkbox" className="form-check-input" name="desayuno" id="desayuno" value={this.state.desayuno} onChange={this.handleChange} />
+                                                    <label className="form-check-label" htmlFor="desayuno">{this.state.desayuno ? "Con Desayuno" : "Sin Desayuno"}</label>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-1 d-flex justify-content-end align-items-center">
+                                                <button type="button" className="btn btn-primary ml-2 mt-2" onClick={this.handleAddTarifa}><i className="fas fa-arrow-circle-down"></i></button>
+                                            </div>
                                         </div>
                                         :
                                         ""
                                     }
                                     <hr />
-                                    <div className="d-flex flex-wrap justify-content-start">
+                                    <ul className="list-group">
                                         {Tarifas}
-                                    </div>
+                                    </ul>
                                     {
                                         this.state.advertencia
                                         ?
@@ -244,13 +297,9 @@ class Tarifas extends Component {
                     </div>
                 }
                 <style jsx="true">{`
-                    .badge-pill {
-                        padding: 8px;
-                        font-size: 18px;
-                        margin-right: 5px;
-                        margin-bottom: 5px;
-                    }
-                    .fa-times-circle {
+                    .btnDeleteTarifa {
+                        margin-top: 4px;
+                        color: red;
                         cursor: pointer;
                     }
                 `}</style>
@@ -260,3 +309,10 @@ class Tarifas extends Component {
 }
 
 export default Tarifas;
+
+/*
+<div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" id="autoSizingCheck" />
+    <label class="form-check-label" for="autoSizingCheck">Remember me</label>
+</div>
+*/

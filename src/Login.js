@@ -76,13 +76,13 @@ class Login extends Component {
 									<i className="fas fa-question text-info"></i>
 								</div>
 								<div>
-									<form onSubmit={this.handleSubmit} autocomplete="off">
+									<form onSubmit={this.handleSubmit} autoComplete="off">
 										<div className="form-group">
-											<label for="email">Email</label>
+											<label htmlFor="email">Email</label>
 											<input type="email" name="email" id="email" className="form-control" placeholder="nombre@ejemplo.com" value={this.state.dataForm.email} onChange={this.handleChange} />
 										</div>
 										<div className="form-group">
-											<label for="password">Contraseña</label>
+											<label htmlFor="password">Contraseña</label>
 											<input type="password" name="password" id="password" className="form-control" value={this.state.dataForm.password} onChange={this.handleChange} />
 										</div>
 										<div className="d-flex justify-content-end">

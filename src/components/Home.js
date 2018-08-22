@@ -43,10 +43,10 @@ class Home extends Component {
 				this.setState(
 					{idDepartamento: parseInt(localStorage.getItem("idDepartamento"), 10)}
 				, () => {
-					localStorage.removeItem("idDepartamento");
+					//localStorage.removeItem("idDepartamento");
 					if("nombreDepartamento" in localStorage) {
 						this.setState({nombreDepartamento: localStorage.getItem("nombreDepartamento")});
-						localStorage.removeItem("nombreDepartamento");
+						//localStorage.removeItem("nombreDepartamento");
 					}
 				});
 			}
@@ -56,10 +56,10 @@ class Home extends Component {
 				this.setState(
 					{idCiudad: parseInt(localStorage.getItem("idCiudad"), 10)}
 				, () => {
-					localStorage.removeItem("idCiudad");
+					//localStorage.removeItem("idCiudad");
 					if("nombreCiudad" in localStorage) {
 						this.setState({nombreCiudad: localStorage.getItem("nombreCiudad")});
-						localStorage.removeItem("nombreCiudad");
+						//localStorage.removeItem("nombreCiudad");
 					}
 				});
 			}

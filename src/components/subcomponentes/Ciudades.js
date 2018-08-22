@@ -85,7 +85,7 @@ class Ciudades extends Component {
         const loading = this.state.loading;
         const ciudades = this.state.ciudades;
         return(
-            <div className="Ciudades">
+            <div className="Ciudades mb-4">
                 {
                     loading ?
                     <Loading />
@@ -98,7 +98,7 @@ class Ciudades extends Component {
                                         ciudades.map((element) => {
                                             return(
                                                 <Button block key={element.id} tag="button" className="bg-warning text-dark" onClick={(e) => this.handleCiudadesClick(element.id, element.nombre, e)}>
-                                                    <strong>{element.nombre}</strong>
+                                                    {element.nombre}
                                                 </Button>
                                             );
                                         })

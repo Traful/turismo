@@ -254,16 +254,28 @@ class Redes extends Component {
                                     {
                                         menu && menu_opt_sistema
                                         ?
-                                        <div className="d-flex flex-xs-column flex-sm-column flex-md-row justify-content-start">
-                                            <select className="form-control mb-2" value={this.state.redes.Selected} onChange={this.handleComboRedesChange}>
-                                                {opciones}
-                                            </select>
-                                            <div className="input-group">
-                                                <div className="input-group-prepend">
-                                                    <div className="input-group-text">http://</div>
+                                        <div className="row">
+                                            <div className="col-xs-6 col-md-4">
+                                                <div className="form-group">
+                                                    <label htmlFor="idred">Red</label>
+                                                    <select className="form-control mb-2" name="idred" id="idred" value={this.state.redes.Selected} onChange={this.handleComboRedesChange}>
+                                                        {opciones}
+                                                    </select>
                                                 </div>
-                                                <input type="text" className="form-control" value={this.state.link} placeholder="Dirección Web" onChange={(e) => this.setState({link: e.target.value})} />
-                                                <button className="btn btn-primary ml-2 btn-ok-social" onClick={this.handleAddRed}><i className="fas fa-arrow-circle-down"></i></button>
+                                            </div>
+                                            <div className="col-xs-6 col-md-4">
+                                                <div className="form-group">
+                                                    <label htmlFor="dweb">Web</label>
+                                                    <div className="input-group">
+                                                        <div className="input-group-prepend">
+                                                            <span className="input-group-text">http://</span>
+                                                        </div>
+                                                        <input type="text" className="form-control" name="dweb" id="dweb" value={this.state.link} placeholder="Dirección Web" onChange={(e) => this.setState({link: e.target.value})} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="col-xs-6 col-md-1 d-flex justify-content-end align-items-center">
+                                                <button type="button" className="btn btn-primary ml-2 mt-2" onClick={this.handleAddRed}><i className="fas fa-arrow-circle-down"></i></button>
                                             </div>
                                         </div>
                                         :
@@ -304,9 +316,6 @@ class Redes extends Component {
                     .social-link {
                         text-decoration: none;
                         color: #fff;
-                    }
-                    .input-group-prepend, .btn-ok-social {
-                        height: 36.5px;
                     }
                     @media only screen and (max-width: 575px) {
                         .flex-xs-column {
