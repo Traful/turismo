@@ -38,6 +38,8 @@ class Departamentos extends Component {
         .then(res => {
             if(res.ok && res.status === 200) {
                 res.json().then((data) => {
+                    //Agregar Todos
+                    data.data.registros.unshift({id: 0, nombre: "Todos"});
                     this.setState({
                         loading: false,
                         departamentos: data.data.registros,

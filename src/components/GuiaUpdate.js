@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Loading from "../utils/loading";
 import { Container, Row, Col, Alert, Button, Form, FormGroup, Label, Input, Breadcrumb, BreadcrumbItem, TabContent, TabPane, Nav, NavItem, NavLink } from "reactstrap";
-import classnames from 'classnames';
+import classnames from "classnames";
 
 import GoogleMapReact from "google-map-react";
 import Servicios from "./subcomponentes/Servicios";
@@ -43,7 +43,8 @@ class GuiaUpdate extends Component {
 			loading: true,
 			error: false,
 			modal: {
-                msg: "",
+				msg: "",
+				extras: "",
                 open: false,
                 onlyOk: true
             },
@@ -117,11 +118,23 @@ class GuiaUpdate extends Component {
 	}
 
 	handleValorTipoCatSelect = (event) => {
-		this.setState({valorestipocatselect: event.target.value});
+		this.setState({
+			guia: {
+				...this.state.guia,
+				idvalortipcat: event.target.value
+			},
+			valorestipocatselect: event.target.value
+		});
 	}
 
 	handleTipoCategorias = (event) => {
-		this.setState({tiposcategoriasselect: event.target.value});
+		this.setState({
+			guia: {
+				...this.state.guia,
+				idtipocategorias: event.target.value
+			},
+			tiposcategoriasselect: event.target.value
+		});
 		this.findValorizacion(event.target.value, 0);
 	}
 
@@ -139,14 +152,6 @@ class GuiaUpdate extends Component {
 	}
 
 	readURLLogo = (event) => {
-		/*
-		this.setState({
-			guia: {
-				...this.state.guia,
-				logo: URL.createObjectURL(event.target.files[0])
-			}
-		});
-		*/
 		if(event.target.files && event.target.files[0]) {
 			var reader = new FileReader();
 			reader.onload = function(e) {
@@ -178,38 +183,74 @@ class GuiaUpdate extends Component {
 		});
 	}
 
-	subirFormulario = () => {
-		console.log(this.state.guia);
-		//const data = new FormData(event.target);
-		//Acomodar a la nueva API!
-		/*
-		fetch(process.env.REACT_APP_URL_API_SERVER + "/guiaupdate.php", {
+	subirFormulario = (event) => {
+		this.setState({loading: true});
+		const data = new FormData(event.target);
+		for(var [key, value] of Object.entries(this.state.guia)) {
+			data.append(key, value);
+		}
+		//Se pasa el ID del Usuario actual
+		if("WebTurId" in localStorage) { //Siempre debería existir!
+			if(localStorage.getItem("WebTurId").length > 0) {
+				data.set("iduser", localStorage.getItem("WebTurId"));
+			}
+		}
+		var logo = document.getElementById('uploadLogo').files[0];
+		if(logo) {
+			data.append("logo", logo, logo.name);
+		}
+		fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia/${this.state.id}`, {
 			method: "POST",
 			headers: {
 				"Authorization": localStorage.getItem("WebTurToken")
+				//"Content-Type": "multipart/form-data"
 			},
 			body: data
 		})
 		.then(res => {
+			this.setState({loading: false});
 			if(res.ok && res.status === 200) {
 				res.json().then((data) => {
-					if(data.err === true) {
-						let errores = "";
-						data.errMsg.forEach(element => {
-							errores += `${element} - `;
+					if(data.logo !== this.state.guia.logo) {
+						this.setState({
+							guia: {
+								...this.state.guia,
+								logo: data.logo
+							}
 						});
+					}
+				});
+				//this.state.guia.logo
+				this.setState({
+					modal: {
+						...this.state.modal,
+						msg: "Los datos se actualizaron correctamente!",
+						open: true
+					}
+				});
+			} else {
+				//409 Conflicto
+				res.json().then((data) => {
+					if(data.err === true) {
+						let errores ="";
+						if(data.errMsgs && Array.isArray(data.errMsgs)) {
+							data.errMsgs.forEach(element => {
+								errores += `<p>${element}</p>`;
+							});
+						}
 						this.setState({
 							modal: {
 								...this.state.modal,
-								msg: `Ocurrió un error al actualizar los datos: ${errores}`,
+								msg: data.errMsg,
+								extras: errores,
 								open: true
 							}
 						});
-					} else {
+					} else { //Error desconocido OJO!
 						this.setState({
 							modal: {
 								...this.state.modal,
-								msg: "Los datos se actualizaron correctamente!",
+								msg: "Error desconocido, comunicar al Administrador del sistema esta situación!",
 								open: true
 							}
 						});
@@ -217,7 +258,6 @@ class GuiaUpdate extends Component {
 				});
 			}
 		});
-		*/
 	}
 
 	handleSubmit = (event) => {
@@ -285,38 +325,47 @@ class GuiaUpdate extends Component {
 				if(res.ok && res.status === 200) {
 					res.json().then((data) => {
 						if(data) {
-							if(data.data.registros[0].r_vencimiento === null) {
-								data.data.registros[0].r_vencimiento = "";
-							}
-							this.setState({
-								guia: data.data.registros[0]
-							}, () => {
-								//Back //Esto Sirve para volver al Home en el lugar que se inició
-								localStorage.setItem("idDepartamento", this.state.guia.iddepartamento);
-								localStorage.setItem("nombreDepartamento", this.state.guia.nombredepartamento);
-								localStorage.setItem("idCiudad", this.state.guia.idciudad);
-								localStorage.setItem("nombreCiudad", this.state.guia.nombreciudad);
-								//Tipos de Valorización
+							if(parseInt(data.data.count, 10) > 0) {
+								if(data.data.registros[0].r_vencimiento === null) {
+									data.data.registros[0].r_vencimiento = "";
+								}
 								this.setState({
-									tiposcategoriasselect: this.state.guia.idtipocaterias
-								});
-								//Buscar la Valorización
-								this.findValorizacion(this.state.guia.idtipocaterias, this.state.guia.idvalortipcat);
-								//Carga de departamentos
-								fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/departamentos")
-								.then(res => {
-									if(res.ok && res.status === 200) {
-										res.json().then((data) => {
-											this.setState({
-												departamentos: data.data.registros
-											}, () => {
-												this.getCiudades(this.state.guia.iddepartamento);
-												this.setState({loading: false});
+									guia: data.data.registros[0]
+								}, () => {
+									//Back //Esto Sirve para volver al Home en el lugar que se inició
+									/*
+									localStorage.setItem("idDepartamento", this.state.guia.iddepartamento);
+									localStorage.setItem("nombreDepartamento", this.state.guia.nombredepartamento);
+									localStorage.setItem("idCiudad", this.state.guia.idciudad);
+									localStorage.setItem("nombreCiudad", this.state.guia.nombreciudad);
+									*/
+									//Tipos de Valorización
+									this.setState({
+										tiposcategoriasselect: this.state.guia.idtipocategorias
+									});
+									//Buscar la Valorización
+									this.findValorizacion(this.state.guia.idtipocategorias, this.state.guia.idvalortipcat);
+									//Carga de departamentos
+									fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/departamentos")
+									.then(res => {
+										if(res.ok && res.status === 200) {
+											res.json().then((data) => {
+												this.setState({
+													departamentos: data.data.registros
+												}, () => {
+													this.getCiudades(this.state.guia.iddepartamento);
+													this.setState({loading: false});
+												});
 											});
-										});
-									}
+										}
+									});
 								});
-							});
+							} else {
+								this.setState({
+									loading: false,
+									error: true
+								});
+							}
 						} else {
 							this.setState({
 								loading: false,
@@ -405,7 +454,7 @@ class GuiaUpdate extends Component {
 						</div>
 					</Col>
 				</Row>
-				<Row className="justify-content-center mb-4 rounded shadow bg-white pt-4">
+				<Row >
 					<Col>
 						{
 							loading ?
@@ -414,9 +463,9 @@ class GuiaUpdate extends Component {
 								error ?
 									<Alerta />
 								:
-									<div>
+									<div className="col justify-content-center mb-4 rounded shadow bg-white pt-4">
 										<div className="mb-4 bg-dark p-4 text-white">
-											{this.state.guia.legajo} <i className="fas fa-arrow-right"></i> {this.state.guia.nombre}
+											<a href={`${process.env.REACT_APP_URL_API_SERVER_2}/detalle/${this.state.guia.legajo}`} target="_blank">{this.state.guia.legajo}</a> <i className="fas fa-arrow-right"></i> {this.state.guia.nombre}
 										</div>
 										<Form onSubmit={this.handleSubmit} className="pb-5" autoComplete="off">
 											<Nav tabs className="mb-4">
@@ -431,7 +480,7 @@ class GuiaUpdate extends Component {
 																src={`${process.env.REACT_APP_URL_API_SERVER_2}/logos/${this.state.guia.logo}`}
 																className="img-fluid img-thumbnail"
 																style={{maxHeight: "230px"}}
-																alt="img"
+																alt="Logo"
 																onClick={() => {document.getElementById("uploadLogo").click();}}
 															/>
 															<Input id="uploadLogo" name="uploadLogo" type="file" className="d-none" accept="image/*" onChange={this.readURLLogo} />
@@ -483,6 +532,7 @@ class GuiaUpdate extends Component {
 																			placeholder=""
 																			value={this.state.guia.legajo}
 																			onChange={this.handleChange}
+																			maxLength="5"
 																		/>
 																	</FormGroup>
 																</Col>
@@ -549,6 +599,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.nombre}
 																	onChange={this.handleChange}
+																	maxLength="100"
 																/>
 															</FormGroup>
 														</Col>
@@ -563,6 +614,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.domicilio}
 																	onChange={this.handleChange}
+																	maxLength="100"
 																/>
 															</FormGroup>
 														</Col>
@@ -577,6 +629,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.telefono}
 																	onChange={this.handleChange}
+																	maxLength="20"
 																/>
 															</FormGroup>
 														</Col>
@@ -646,6 +699,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.mail}
 																	onChange={this.handleChange}
+																	maxLength="150"
 																/>
 															</FormGroup>
 														</Col>
@@ -661,6 +715,7 @@ class GuiaUpdate extends Component {
 																		placeholder=""
 																		value={this.state.guia.web}
 																		onChange={this.handleChange}
+																		maxLength="150"
 																	/>
 																	<div className="input-group-append">
 																		<span className="input-group-text" id="inputGroupPrepend">
@@ -669,6 +724,9 @@ class GuiaUpdate extends Component {
 																	</div>
 																</div>
 															</FormGroup>
+														</Col>
+														<Col xs="12" md="12" className="d-flex justify-content-end">
+															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 														</Col>
 													</Row>
 												</TabPane>
@@ -780,6 +838,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.p_nombre}
 																	onChange={this.handleChange}
+																	maxLength="50"
 																/>
 															</FormGroup>
 														</Col>
@@ -794,6 +853,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.p_domicilio}
 																	onChange={this.handleChange}
+																	maxLength="50"
 																/>
 															</FormGroup>
 														</Col>
@@ -808,6 +868,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.p_dni}
 																	onChange={this.handleChange}
+																	maxLength="8"
 																/>
 															</FormGroup>
 														</Col>
@@ -824,6 +885,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.p_telefono}
 																	onChange={this.handleChange}
+																	maxLength="20"
 																/>
 															</FormGroup>
 														</Col>
@@ -838,8 +900,14 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.p_mail}
 																	onChange={this.handleChange}
+																	maxLength="150"
 																/>
 															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+														<Col xs="12" md="12" className="d-flex justify-content-end">
+															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 														</Col>
 													</Row>
 												</TabPane>
@@ -856,6 +924,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_nombre}
 																	onChange={this.handleChange}
+																	maxLength="50"
 																/>
 															</FormGroup>
 														</Col>
@@ -870,6 +939,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_domicilio}
 																	onChange={this.handleChange}
+																	maxLength="50"
 																/>
 															</FormGroup>
 														</Col>
@@ -884,6 +954,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_dni}
 																	onChange={this.handleChange}
+																	maxLength="8"
 																/>
 															</FormGroup>
 														</Col>
@@ -900,6 +971,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_telefono}
 																	onChange={this.handleChange}
+																	maxLength="20"
 																/>
 															</FormGroup>
 														</Col>
@@ -914,6 +986,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_mail}
 																	onChange={this.handleChange}
+																	maxLength="150"
 																/>
 															</FormGroup>
 														</Col>
@@ -930,6 +1003,7 @@ class GuiaUpdate extends Component {
 																	placeholder=""
 																	value={this.state.guia.r_cargo}
 																	onChange={this.handleChange}
+																	maxLength="50"
 																/>
 															</FormGroup>
 														</Col>
@@ -946,6 +1020,11 @@ class GuiaUpdate extends Component {
 																	onChange={this.handleChange}
 																/>
 															</FormGroup>
+														</Col>
+													</Row>
+													<Row>
+														<Col xs="12" md="12" className="d-flex justify-content-end">
+															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 														</Col>
 													</Row>
 												</TabPane>
@@ -966,9 +1045,13 @@ class GuiaUpdate extends Component {
 															</FormGroup>
 														</Col>
 													</Row>
+													<Row>
+														<Col xs="12" md="12" className="d-flex justify-content-end">
+															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
+														</Col>
+													</Row>
 												</TabPane>
 											</TabContent>
-											<Button color="primary" type="button" className="float-right" onClick={this.subirFormulario}>Guardar Cambios</Button>
 										</Form>
 										<style jsx="true">{`
 											.nav-link {
@@ -979,7 +1062,9 @@ class GuiaUpdate extends Component {
 						}
 					</Col>
 				</Row>
-				<ModalMsg open={this.state.modal.open} titulo="Update" msg={this.state.modal.msg} onlyOk={this.state.modal.onlyOk} handleAceptar={this.handleMsgOk} />
+				<ModalMsg open={this.state.modal.open} titulo="Update" msg={this.state.modal.msg} onlyOk={this.state.modal.onlyOk} handleAceptar={this.handleMsgOk}>
+						{this.state.modal.extras}
+				</ModalMsg>
 			</Container>
 		);
 	}

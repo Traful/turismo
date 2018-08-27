@@ -21,7 +21,18 @@ class Home extends Component {
 		this.handleCiudadesClick = this.handleCiudadesClick.bind(this);
 	}
 
+	/*
+	localStorage.setItem("idDepartamento", this.state.guia.iddepartamento);
+	localStorage.setItem("nombreDepartamento", this.state.guia.nombredepartamento);
+	localStorage.setItem("idCiudad", this.state.guia.idciudad);
+	localStorage.setItem("nombreCiudad", this.state.guia.nombreciudad);
+	*/
+
 	handleDepartamentosClick = (id, nombre) => {
+		localStorage.setItem("idDepartamento", id);
+		localStorage.setItem("nombreDepartamento", nombre);
+		localStorage.setItem("idCiudad", 0);
+		localStorage.setItem("nombreCiudad", "");
 		this.setState({
 			nombreDepartamento: nombre,
 			idDepartamento: id,
@@ -31,6 +42,8 @@ class Home extends Component {
 	}
 
 	handleCiudadesClick = (id, nombre) => {
+		localStorage.setItem("idCiudad", id);
+		localStorage.setItem("nombreCiudad", nombre);
 		this.setState({
 			nombreCiudad: nombre,
 			idCiudad: id
@@ -38,6 +51,7 @@ class Home extends Component {
 	}
 
 	componentDidMount() {
+		/*
 		if("idDepartamento" in localStorage) {
 			if(localStorage.getItem("idDepartamento").length > 0) {
 				this.setState(
@@ -64,9 +78,39 @@ class Home extends Component {
 				});
 			}
 		}
+		*/
+		let idDepartamento = 0;
+		let nombreDepartamento = "Todos";
+		let idCiudad = 0;
+		let nombreCiudad = "";
+		if("idDepartamento" in localStorage) {
+			if(localStorage.getItem("idDepartamento").length > 0) {
+				idDepartamento = parseInt(localStorage.getItem("idDepartamento"), 10);
+				if("nombreDepartamento" in localStorage) {
+					nombreDepartamento = localStorage.getItem("nombreDepartamento");
+				}
+			}
+		}
+		if("idCiudad" in localStorage) {
+			if(localStorage.getItem("idCiudad").length > 0) {
+				idCiudad = parseInt(localStorage.getItem("idCiudad"), 10);
+				if("nombreCiudad" in localStorage) {
+					nombreCiudad = localStorage.getItem("nombreCiudad");
+				}
+			}
+		}
+		this.setState({
+			idDepartamento: idDepartamento,
+			nombreDepartamento: nombreDepartamento,
+			idCiudad: idCiudad,
+			nombreCiudad: nombreCiudad,
+			loading: false
+		});
+		/*
 		this.setState({
 			loading: false
 		});
+		*/
 	}
 
 	render() {
@@ -82,13 +126,6 @@ class Home extends Component {
 					<Loading />
 					:
 					<Container>
-						<Row>
-							<Col xs="12" md="3">
-								<Breadcrumb>
-									<BreadcrumbItem active>Home</BreadcrumbItem>
-								</Breadcrumb>
-							</Col>
-						</Row>
 						<Row>
 							<Col xs="12" md="3">
 								<Depatamentos notificar={true} handleEventClick={this.handleDepartamentosClick} />
@@ -111,7 +148,7 @@ class Home extends Component {
 								</Row>
 								<Row>
 									<Col>
-										<Guias idCiudad={idCiudad} />
+										<Guias idDepartamento={idDepartamento} idCiudad={idCiudad} />
 									</Col>
 								</Row>
 							</Col>

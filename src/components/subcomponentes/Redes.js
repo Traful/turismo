@@ -15,7 +15,7 @@ class Redes extends Component {
             menu_opt_sistema: true,
             link: "",
             redes: {
-                data: [{id: 0, nombre: "Cargando...", icono: ""}],
+                data: [{id: 0, nombre: "Cargando...", icono: "", visible: true}],
                 selected: 0
             },
             redes_guia: [],
@@ -61,7 +61,10 @@ class Redes extends Component {
             .then(res => {
                 if(res.ok && res.status === 200) {
                     this.findRedes();
-                    this.setState({link: ""});
+                    this.setState({
+                        menu_opt_sistema: true,
+                        link: ""
+                    });
                 }
             });
         });
@@ -178,21 +181,21 @@ class Redes extends Component {
             if(this.state.redes_guia.length) {
                 let id_visible = false;
                 let redes_style = this.state.redes.data.map((red) => {
-                    let rest = null;
-                    for(let i=0; i<this.state.redes_guia.length; i++) {
-                        if(red.id === this.state.redes_guia[i].idred) {
-                            rest = {
-                                ...red,
-                                visible: false
-                            };
+                    let x = this.state.redes_guia.findIndex((e) => {
+                        if(red.id === e.idred) {
+                            return true;
                         } else {
-                            if(!id_visible) {
-                                id_visible = red.id;
-                            }
-                            rest = red;
+                            return false;
                         }
+                    });
+                    if(x > -1) {
+                        return {...red, visible: false}
+                    } else {
+                        if(id_visible === false) {
+                            id_visible = red.id;
+                        }
+                        return red;
                     }
-                    return rest;
                 });
                 if(id_visible) {
                     this.setState({
@@ -279,7 +282,7 @@ class Redes extends Component {
                                             </div>
                                         </div>
                                         :
-                                        "Error!"
+                                        ""
                                     }
                                     <hr />
                                     <div className="d-flex flex-wrap justify-content-start">

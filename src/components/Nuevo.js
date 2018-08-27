@@ -253,13 +253,14 @@ class Nuevo extends Component {
 					:
 					<Container>
 						<Row className="justify-content-center">
-							<Col className="col col-xs-12 col-md-4">
-								<div className="d-flex align-items-baseline">
-									<Button color="primary" className="mr-2 btn-lg" onClick={(e) => this.props.history.push("/")}><i className="fas fa-arrow-circle-left"></i></Button>
-									<Breadcrumb>
-										<BreadcrumbItem active>Formulario - Nuevo Registro</BreadcrumbItem>
-									</Breadcrumb>
-								</div>
+							<Col style={{paddingLeft: "0"}} className="col-xs-12 col-md-1">
+								<Button style={{marginLeft: "0"}} color="primary" className="mr-2 btn-lg" onClick={(e) => this.props.history.push("/")}><i className="fas fa-arrow-circle-left"></i></Button>
+								
+							</Col>
+							<Col className="col-xs-12 col-md-3">
+								<Breadcrumb>
+									<BreadcrumbItem active>Formulario - Nuevo Registro</BreadcrumbItem>
+								</Breadcrumb>
 							</Col>
 						</Row>
 						<Row className="justify-content-center">
@@ -312,9 +313,9 @@ class Nuevo extends Component {
 											id="legajo"
 											name="legajo"
 											placeholder=""
-											maxLength="5"
 											value={this.state.guia.legajo}
 											onChange={this.handleChange}
+											maxLength="5"
 										/>
 									</FormGroup>
 									<FormGroup>
@@ -325,9 +326,9 @@ class Nuevo extends Component {
 											id="nombre"
 											name="nombre"
 											placeholder=""
-											maxLength="50"
 											value={this.state.guia.nombre}
 											onChange={this.handleChange}
+											maxLength="100"
 										/>
 									</FormGroup>
 									<Button color="primary" type="submit" className="float-right">Guardar y Continuar</Button>

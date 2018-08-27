@@ -221,12 +221,12 @@ class Tarifas extends Component {
                     <div className="row">
                         <div className="col">{gserv.descripcion}</div>
                         <div className="col">$ {gserv.importe}</div>
-                        <div className="col">{gserv.desayuno ? "Con Desayuno" : "Sin Desayuno"}</div>
+                        <div className="col">{gserv.desayuno === "1" ? "Con Desayuno" : "Sin Desayuno"}</div>
                         {
                             menu
                             ?
                             <div className="col d-flex justify-content-end">
-                                <i className="fas fa-trash btnDeleteTarifa" onClick={this.handleDeleteTarifa.bind(this, gserv.id)}></i>
+                                <i className="fas fa-trash text-danger btnDeleteTarifa" onClick={this.handleDeleteTarifa.bind(this, gserv.id)}></i>
                             </div>
                             :
                             <div className="col"></div>
@@ -299,7 +299,6 @@ class Tarifas extends Component {
                 <style jsx="true">{`
                     .btnDeleteTarifa {
                         margin-top: 4px;
-                        color: red;
                         cursor: pointer;
                     }
                 `}</style>

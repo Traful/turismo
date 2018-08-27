@@ -63,6 +63,9 @@ class Servicios extends Component {
             })
             .then(res => {
                 if(res.ok && res.status === 201) {
+                    this.setState({
+                        capacidad: 0
+                    });
                     this.findServicios();
                 } else {
                     /*
@@ -96,7 +99,6 @@ class Servicios extends Component {
     }
     
     procesar = () => {
-        //var updatedTicket = Object.assign({}, this.state.ticket, {flightNo:'1010'});
         let alse = Object.assign([], this.state.allServicios);
         let firstOK = 0;
         alse = alse.map((valor) => {

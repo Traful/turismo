@@ -26,6 +26,7 @@ class Guias extends Component {
                     id: v.id,
                     legajo: v.legajo,
                     nombre: v.nombre,
+                    activo: v.activo,
                     estilo: {display: "table-row"}
                 }
             } else {
@@ -33,6 +34,7 @@ class Guias extends Component {
                     id: v.id,
                     legajo: v.legajo,
                     nombre: v.nombre,
+                    activo: v.activo,
                     estilo: {display: "none"}
                 }
             }
@@ -40,50 +42,65 @@ class Guias extends Component {
         this.setState({guias: buffer});
     }
 
-    findGuias = (idCiudad) => {
-        if(idCiudad === 0) {
-            this.setState({
-                loading: false,
-                guias: []
-            });
+    findGuias = (idDepartamento, idCiudad) => {
+        let url = "";
+        if(idDepartamento === 0) {
+            url = process.env.REACT_APP_URL_API_SERVER_2 + "/guias";
         } else {
-            fetch(process.env.REACT_APP_URL_API_SERVER_2 + "/guias/ciudad/" + idCiudad, {
-                headers: new Headers({
-                    "Authorization": localStorage.getItem("WebTurToken")
-                })
-            })
-            .then(res => {
-                if(res.ok && res.status === 200) {
-                    res.json().then((data) => {
-                        let datos = data.data.registros.map((d) => {
-                            return {
-                                id: d.id,
-                                legajo: d.legajo,
-                                nombre: d.nombre,
-                                estilo: {display: "table-row"}
-                            }
-                        });
-                        this.setState({
-                            loading: false,
-                            guias: datos
-                        });
-                    });
-                }
-            });
+            if(idCiudad === 0) {
+                url = process.env.REACT_APP_URL_API_SERVER_2 + "/guias/departamento/" + idDepartamento;
+            } else {
+                url = process.env.REACT_APP_URL_API_SERVER_2 + "/guias/ciudad/" + idCiudad;
+            }
         }
+        fetch(url, {
+            headers: new Headers({
+                "Authorization": localStorage.getItem("WebTurToken")
+            })
+        })
+        .then(res => {
+            if(res.ok && res.status === 200) {
+                res.json().then((data) => {
+                    let datos = data.data.registros.map((d) => {
+                        return {
+                            id: d.id,
+                            legajo: d.legajo,
+                            nombre: d.nombre,
+                            activo: d.activo,
+                            estilo: {display: "table-row"}
+                        }
+                    });
+                    this.setState({
+                        loading: false,
+                        guias: datos
+                    });
+                });
+            }
+        });
     }
 
     componentDidMount() {
         //Obtener todas las Guias de la Ciudad seleccionada
+        /*
         if(this.props.idCiudad !== 0) {
             this.findGuias(this.props.idCiudad);
         }
+        */
+        this.findGuias(this.props.idDepartamento, this.props.idCiudad);
     }
 
     componentDidUpdate(prevProps) {
+        if(this.props.idDepartamento !== prevProps.idDepartamento) {
+            this.setState({filtro: ""});
+            if(this.props.idDepartamento === 0) {
+                this.findGuias(0, 0);
+            } else {
+                this.findGuias(this.props.idDepartamento, 0);
+            }
+        }
         if(this.props.idCiudad !== prevProps.idCiudad) {
             this.setState({filtro: ""});
-            this.findGuias(this.props.idCiudad);
+            this.findGuias(this.props.idDepartamento, this.props.idCiudad);
         }
     }
 
@@ -117,11 +134,15 @@ class Guias extends Component {
                                     {
                                         guias.map((v) => {
                                             return (
+                                                v.activo === "1"
+                                                ?
                                                 <tr key={v.id} style={v.estilo}>
-                                                    <th scope="row">{v.legajo}</th>
+                                                    <th scope="row"><a href={`${process.env.REACT_APP_URL_API_SERVER_2}/detalle/${v.id}`} target="_blank">{v.legajo}</a></th>
                                                     <td>{v.nombre}</td>
                                                     <td style={{textAlign: "right"}}><Link to={"/guia/" + v.id}><i className="fas fa-search text-primary" style={{cursor: "pointer"}}></i></Link></td>
                                                 </tr>
+                                                :
+                                                ""
                                             );
                                         })
                                     }

@@ -7,16 +7,28 @@ import About from "./components/About";
 import Perfil from "./components/Perfil";
 import GuiaUpdate from "./components/GuiaUpdate";
 import Nuevo from "./components/Nuevo";
+import Filtro from "./components/Filtro"
 
 class Web extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-            isOpen: false
+			isOpen: false,
+			body: document.querySelector("body"),
+            menuItems: document.querySelectorAll('.nav__list-item')
 		};
 		this.toggle = this.toggle.bind(this);
-        this.handleLogOut = this.handleLogOut.bind(this);
+		this.handleLogOut = this.handleLogOut.bind(this);
+		this.handleMenuClick = this.handleMenuClick.bind(this);
 	}
+
+	handleMenuClick = () => {
+        if(this.state.body.classList.contains("nav-active")) {
+            this.state.body.classList.remove("nav-active");
+        } else {
+            this.state.body.classList.add("nav-active");
+        }
+    }
 
 	toggle = () => {
         this.setState({
@@ -26,21 +38,27 @@ class Web extends Component {
 
     handleLogOut = () => {
 		localStorage.clear();
-		window.location.replace(process.env.REACT_APP_URL_HOST);
-    }
+		window.location.replace(`${process.env.REACT_APP_URL_HOST}/${process.env.REACT_APP_BASENAME}`);
+	}
+	
+	/*
+	<Link to="/about" className="nav-link" onClick={this.handleMenuClick}>Acerca de...</Link>
+	<Link to="/perfil" className="nav-link" onClick={this.handleMenuClick}>Perfil</Link>
+	*/
 
 	render() {
 		return (
 			<div className="Web">
-				<Router basename="/sistema-turismo" history={Router.hashHistory}>
+				<Router basename={`/${process.env.REACT_APP_BASENAME}`} history={Router.hashHistory}>
 					<div>
 						<Menu>
-							<Link to="/" className="nav-link">Home</Link>
-							<Link to="/about" className="nav-link">Acerca de...</Link>
-							<Link to="/perfil" className="nav-link">Perfil</Link>
+							<Link to="/" className="nav-link" onClick={this.handleMenuClick}>Home</Link>
+							<Link to="/filtro" className="nav-link" onClick={this.handleMenuClick}>Consultas</Link>
+							
 							<a onClick={this.handleLogOut}>Logout</a>
 						</Menu>
 						<Route exact path="/" component={Home} />
+						<Route exact path="/filtro" component={Filtro} />
 						<Route exact path="/about" component={About} />
 						<Route exact path="/perfil" component={Perfil} />
 						<Route exact path="/guia/:id" component={GuiaUpdate} />
