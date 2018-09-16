@@ -6,8 +6,8 @@ class Login extends Component {
 		this.state = {
 			error: false,
 			dataForm: {
-				email: "hansjal@gmail.com",
-				password: "quilmes"
+				email: "",
+				password: ""
 			}
 		};
 		this.handleSubmit = this.handleSubmit.bind(this);

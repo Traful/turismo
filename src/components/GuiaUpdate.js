@@ -419,7 +419,21 @@ class GuiaUpdate extends Component {
 		});
 		let dataTabs = [
 			//Fiscalización
-			{nombre: "Fiscal", id: "1"},
+			{nombre: "Establecimiento", id: "1"},
+			{nombre: "Propietario", id: "8"},
+			{nombre: "Responsable", id: "9"},
+			{nombre: "Notas", id: "10"},
+			{nombre: "Servicios", id: "4"},
+			{nombre: "Redes", id: "5"},
+			{nombre: "Tarifas", id: "7"},
+			{nombre: "Descripción", id: "2"},
+			{nombre: "Geo", id: "3"},
+			{nombre: "Imágenes", id: "6"}
+		];
+		/*
+		let dataTabs = [
+			//Fiscalización
+			{nombre: "Establecimiento", id: "1"},
 			{nombre: "Propietario", id: "8"},
 			{nombre: "Responsable", id: "9"},
 			{nombre: "Notas", id: "10"},
@@ -435,6 +449,7 @@ class GuiaUpdate extends Component {
 				dataTabs.push({nombre: "Imágenes", id: "6"});
 			}
 		}
+		*/
 		const Tabs = dataTabs.map((dT) => {
 			return(
 				<NavItem key={`dT-${dT.id}`}>
@@ -725,6 +740,23 @@ class GuiaUpdate extends Component {
 																</div>
 															</FormGroup>
 														</Col>
+														<Col xs="12" md="12">
+															<FormGroup>
+																<Label htmlFor="epoca">Época de Prestación de Servicios</Label>
+																<div className="input-group">
+																	<Input
+																		type="text"
+																		className="form-control"
+																		id="epoca"
+																		name="epoca"
+																		placeholder=""
+																		value={this.state.guia.epoca}
+																		onChange={this.handleChange}
+																		maxLength="200"
+																	/>
+																</div>
+															</FormGroup>
+														</Col>
 														<Col xs="12" md="12" className="d-flex justify-content-end">
 															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 														</Col>
@@ -745,6 +777,9 @@ class GuiaUpdate extends Component {
 																	rows="8"
 																/>
 															</FormGroup>
+														</Col>
+														<Col xs="12" md="12" className="d-flex justify-content-end">
+															<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 														</Col>
 													</Row>
 												</TabPane>
@@ -792,6 +827,11 @@ class GuiaUpdate extends Component {
 																			<Marca lat={this.state.guia.latitud} lng={this.state.guia.longitud} text={titulo} />
 																		</GoogleMapReact>
 																	</div>
+																</Col>
+															</Row>
+															<Row>
+																<Col xs="12" md="12" className="d-flex justify-content-end">
+																	<Button color="primary" type="button" onClick={this.subirFormulario}>Guardar Cambios</Button>
 																</Col>
 															</Row>
 														</Col>

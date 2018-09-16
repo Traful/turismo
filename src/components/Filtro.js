@@ -456,7 +456,7 @@ class Filtro extends Component {
 					<div className="container">
 						<div className="row">
 							<div className="col bg-white text-dark p-4 rounded">
-								<div class="mb-4 bg-dark p-4 text-white"><i class="fas fa-arrow-right"></i> Consultas</div>
+								<div className="mb-4 bg-dark p-4 text-white"><i class="fas fa-arrow-right"></i> Consultas</div>
 								<form action={`${process.env.REACT_APP_URL_API_SERVER_2}/filtro`} method="post" encType="application/x-www-form-urlencoded" target="_blank">
 									<div className="row">
 										<div className="col-xs-12 col-md-3">
