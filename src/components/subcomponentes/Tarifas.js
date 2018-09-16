@@ -15,7 +15,10 @@ class Tarifas extends Component {
             allTarifasSelected: 0,
             guiaTarifas: [],
             importe: 0,
-            desayuno: false
+            desayuno: false,
+            banioprivado: false,
+            mediapension: false,
+            pensioncompleta: false
         };
         this.findTarifas = this.findTarifas.bind(this);
         this.handleAllTarifasChange = this.handleAllTarifasChange.bind(this);
@@ -45,7 +48,7 @@ class Tarifas extends Component {
 			}
 		}
 		this.setState({
-				[name]: value
+			[name]: value
 		});
     }
 
@@ -59,14 +62,23 @@ class Tarifas extends Component {
                     "Authorization": localStorage.getItem("WebTurToken"),
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({importe: this.state.importe, desayuno: this.state.desayuno})
+                body: JSON.stringify({
+                    importe: this.state.importe,
+                    desayuno: this.state.desayuno,
+                    banioprivado: this.state.banioprivado,
+                    mediapension: this.state.mediapension,
+                    pensioncompleta: this.state.pensioncompleta
+                })
             })
             .then(res => {
                 if(res.ok && res.status === 201) {
                     this.findTarifas();
                     this.setState({
                         importe: 0,
-                        desayuno: false
+                        desayuno: false,
+                        banioprivado: false,
+                        mediapension: false,
+                        pensioncompleta: false
                     });
                 } else {
                     /*
@@ -216,12 +228,22 @@ class Tarifas extends Component {
             );
         });
         const Tarifas = this.state.guiaTarifas.map((gserv) => {
+            let serv_tarifas = [];
+            if(gserv.desayuno === "1") { serv_tarifas[serv_tarifas.length] = "Desayuno"; }
+            if(gserv.banioprivado === "1") { serv_tarifas[serv_tarifas.length] = "Baño Privado"; }
+            if(gserv.mediapension === "1") { serv_tarifas[serv_tarifas.length] = "Media Pensión"; }
+            if(gserv.pensioncompleta === "1") { serv_tarifas[serv_tarifas.length] = "Pensión Completa"; }
+            if(serv_tarifas.length) {
+                serv_tarifas = serv_tarifas.join(", ");
+            } else {
+                serv_tarifas = "Sin Servicios";
+            }
             return(
                 <li key={`Serv-${gserv.id}`} className="list-group-item">
                     <div className="row">
                         <div className="col">{gserv.descripcion}</div>
                         <div className="col">$ {gserv.importe}</div>
-                        <div className="col">{gserv.desayuno === "1" ? "Con Desayuno" : "Sin Desayuno"}</div>
+                        <div className="col">{serv_tarifas}</div>
                         {
                             menu
                             ?
@@ -249,32 +271,59 @@ class Tarifas extends Component {
                                     {
                                         menu && menu_opt_sistema
                                         ?
-                                        <div className="row">
-                                            <div className="col-xs-6 col-md-3">
-                                                <div className="form-group">
-                                                    <label htmlFor="idtarifa">Tipo</label>
-                                                    <select className="form-control" name="idtarifa" id="idtarifa" value={this.state.allTarifasSelected} onChange={this.handleAllTarifasChange}>
-                                                        {opciones}
-                                                    </select>
+                                        <React.Fragment>
+                                            <div className="row">
+                                                <div className="col-xs-12 col-md-10">
+                                                    <div className="form-group">
+                                                        <label htmlFor="idtarifa">Tipo</label>
+                                                        <select className="form-control" name="idtarifa" id="idtarifa" value={this.state.allTarifasSelected} onChange={this.handleAllTarifasChange}>
+                                                            {opciones}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div className="col-xs-12 col-md-2">
+                                                    <div className="form-group">
+                                                        <label htmlFor="importe">Importe</label>
+                                                        <input type="number" className="form-control" name="importe" id="importe" value={this.state.importe} onChange={this.handleChange} style={{textAlign: "right"}}/>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="col-xs-6 col-md-3">
-                                                <div className="form-group">
-                                                    <label htmlFor="importe">Importe</label>
-                                                    <input type="number" className="form-control" name="importe" id="importe" value={this.state.importe} onChange={this.handleChange} style={{textAlign: "right"}}/>
+                                            <div className="row">
+                                                <div className="col-xs-12 col-md-3">
+                                                    <label htmlFor="idtarifa">Desayuno</label>
+                                                    <div className="form-check mb-2 pt-2">
+                                                        <input type="checkbox" className="form-check-input" name="desayuno" id="desayuno" value={this.state.desayuno} onChange={this.handleChange} />
+                                                        <label className="form-check-label" htmlFor="desayuno">{this.state.desayuno ? "Con Desayuno" : "Sin Desayuno"}</label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-xs-12 col-md-3">
+                                                    <label htmlFor="idtarifa">C/Baño Privado</label>
+                                                    <div className="form-check mb-2 pt-2">
+                                                        <input type="checkbox" className="form-check-input" name="banioprivado" id="banioprivado" value={this.state.banioprivado} onChange={this.handleChange} />
+                                                        <label className="form-check-label" htmlFor="banioprivado">{this.state.banioprivado ? "Con Baño Privado" : "Sin Baño Privado"}</label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-xs-12 col-md-3">
+                                                    <label htmlFor="idtarifa">Media Pensión</label>
+                                                    <div className="form-check mb-2 pt-2">
+                                                        <input type="checkbox" className="form-check-input" name="mediapension" id="mediapension" value={this.state.mediapension} onChange={this.handleChange} />
+                                                        <label className="form-check-label" htmlFor="mediapension">{this.state.mediapension ? "Con Media Pensión" : "Sin Media Pensión"}</label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-xs-12 col-md-3">
+                                                    <label htmlFor="idtarifa">Pensión Completa</label>
+                                                    <div className="form-check mb-2 pt-2">
+                                                        <input type="checkbox" className="form-check-input" name="pensioncompleta" id="pensioncompleta" value={this.state.pensioncompleta} onChange={this.handleChange} />
+                                                        <label className="form-check-label" htmlFor="pensioncompleta">{this.state.pensioncompleta ? "Con Pensión Completa" : "Sin Pensión Completa"}</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="col-xs-6 col-md-3">
-                                                <label htmlFor="idtarifa">Desayuno</label>
-                                                <div className="form-check mb-2 pt-2">
-                                                    <input type="checkbox" className="form-check-input" name="desayuno" id="desayuno" value={this.state.desayuno} onChange={this.handleChange} />
-                                                    <label className="form-check-label" htmlFor="desayuno">{this.state.desayuno ? "Con Desayuno" : "Sin Desayuno"}</label>
+                                            <div className="row">
+                                                <div className="col-xs-12 col-md-12 d-flex justify-content-end align-items-center">
+                                                    <button type="button" className="btn btn-primary btn-block mt-2" onClick={this.handleAddTarifa}><i className="fas fa-arrow-circle-down"></i></button>
                                                 </div>
                                             </div>
-                                            <div className="col-xs-6 col-md-1 d-flex justify-content-end align-items-center">
-                                                <button type="button" className="btn btn-primary ml-2 mt-2" onClick={this.handleAddTarifa}><i className="fas fa-arrow-circle-down"></i></button>
-                                            </div>
-                                        </div>
+                                        </React.Fragment>
                                         :
                                         ""
                                     }

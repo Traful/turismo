@@ -485,7 +485,7 @@ class Filtro extends Component {
 										</div>
 										<div className="col-xs-12 col-md-3">
 											<div className="form-group">
-												<label htmlFor="idTipoValorizacion">Tipo de Valorización</label>
+												<label htmlFor="idTipoValorizacion">Tipo de Categoría</label>
 												<select className="form-control" name="idTipoValorizacion" id="idTipoValorizacion" value={this.state.tvalorizacion.selected} onChange={this.handleTValorizacionChange}>
 													{tvalorizacion}
 												</select>
@@ -493,7 +493,7 @@ class Filtro extends Component {
 										</div>
 										<div className="col-xs-12 col-md-3">
 											<div className="form-group">
-												<label htmlFor="idValorizacion">Valorización</label>
+												<label htmlFor="idValorizacion">Categoría</label>
 												<select className="form-control" name="idValorizacion" id="idValorizacion" value={this.state.valorizacion.selected} onChange={this.handleValorizacionChange}>
 													{valorizacion}
 												</select>

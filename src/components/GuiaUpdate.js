@@ -465,7 +465,7 @@ class GuiaUpdate extends Component {
 								:
 									<div className="col justify-content-center mb-4 rounded shadow bg-white pt-4">
 										<div className="mb-4 bg-dark p-4 text-white">
-											<a href={`${process.env.REACT_APP_URL_API_SERVER_2}/detalle/${this.state.guia.legajo}`} target="_blank">{this.state.guia.legajo}</a> <i className="fas fa-arrow-right"></i> {this.state.guia.nombre}
+											<a href={`${process.env.REACT_APP_URL_API_SERVER_2}/detalle/${this.state.guia.id}`} target="_blank">{this.state.guia.legajo}</a> <i className="fas fa-arrow-right"></i> {this.state.guia.nombre}
 										</div>
 										<Form onSubmit={this.handleSubmit} className="pb-5" autoComplete="off">
 											<Nav tabs className="mb-4">
@@ -555,7 +555,7 @@ class GuiaUpdate extends Component {
 															<Row>
 																<Col xs="12" md="6">
 																	<FormGroup>
-																		<Label htmlFor="tipocategorias">Tipo Valorización</Label>
+																		<Label htmlFor="tipocategorias">Tipo Categoría</Label>
 																		<Input
 																			type="select"
 																			className="form-control"
@@ -570,7 +570,7 @@ class GuiaUpdate extends Component {
 																</Col>
 																<Col xs="12" md="6">
 																	<FormGroup>
-																		<Label htmlFor="idvalortipcat">Valorización</Label>
+																		<Label htmlFor="idvalortipcat">Categoría</Label>
 																		<Input
 																			type="select"
 																			className="form-control"
