@@ -78,14 +78,22 @@ class Nuevo extends Component {
 
 	handleSubmit = (event) => {
 		event.preventDefault();
-		console.log(`${process.env.REACT_APP_URL_API_SERVER_2}/guia`);
+		//Id del Usuario
+		const copy_guia = Object.assign({}, this.state.guia);
+		copy_guia.iduser = 1;
+		//Se pasa el ID del Usuario actual
+		if("WebTurId" in localStorage) { //Siempre debería existir!
+			if(localStorage.getItem("WebTurId").length > 0) {
+				copy_guia.iduser = localStorage.getItem("WebTurId");
+			}
+		}
 		fetch(`${process.env.REACT_APP_URL_API_SERVER_2}/guia`, {
 			method: "POST",
 			headers: {
 				"Authorization": localStorage.getItem("WebTurToken"),
 				"Content-Type": "application/json"
 			},
-			body: JSON.stringify({...this.state.guia})
+			body: JSON.stringify({...copy_guia})
 		})
 		.then(res => {
 			if(res.ok && res.status === 201) {
